@@ -1,0 +1,16 @@
+*.o
+Makefile.in
+Makefile
+aclocal.m4
+autom4te.cache
+configure.in
+configure
+config.*
+depcomp
+compile
+install-sh
+missing
+stamp-h1
+src/dplsh
+.deps
+.libs
