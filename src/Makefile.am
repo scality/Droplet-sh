@@ -1,7 +1,7 @@
 bin_PROGRAMS=dplsh
 
-dplsh_CFLAGS = -I$(top_srcdir)/libdroplet/include
-dplsh_LDADD = $(top_builddir)/libdroplet/libdroplet.la
+dplsh_CFLAGS = -I$(top_srcdir)/libdroplet/include $(LIBDROPLET_CFLAGS)
+dplsh_LDADD = $(LIBDROPLET_LIBS)
 dplsh_SOURCES = \
 	cmd_cd.c \
 	cmd_cp.c \
