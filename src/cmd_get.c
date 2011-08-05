@@ -221,7 +221,7 @@ cmd_get(int argc,
         {
           if (DPL_ENOENT == ret)
             {
-              fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+              fprintf(stderr, "no such object\n");
               goto end;
             }
           goto retry;
@@ -243,7 +243,7 @@ cmd_get(int argc,
         {
           if (DPL_ENOENT == ret)
             {
-              fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+              fprintf(stderr, "no such object\n");
               goto end;
             }
           goto retry;
