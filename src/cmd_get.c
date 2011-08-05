@@ -219,7 +219,11 @@ cmd_get(int argc,
       ret = dpl_openread_range(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, start, end, &data_buf, &data_len, &metadata);
       if (DPL_SUCCESS != ret)
         {
-          //fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+          if (DPL_ENOENT == ret)
+            {
+              fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+              goto end;
+            }
           goto retry;
         }
       ret = write_all(get_data.fd, data_buf, data_len);
@@ -237,7 +241,11 @@ cmd_get(int argc,
       ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata);
       if (DPL_SUCCESS != ret)
         {
-          //fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+          if (DPL_ENOENT == ret)
+            {
+              fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+              goto end;
+            }
           goto retry;
         }
       if (1 == mflag)
