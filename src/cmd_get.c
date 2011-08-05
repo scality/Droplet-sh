@@ -103,6 +103,7 @@ cmd_get(int argc,
   int end = -1;
   int end_inited = 0;
   int mflag = 0;
+  int retries = 0;
 
   memset(&get_data, 0, sizeof (get_data));
   get_data.fd = -1;
@@ -193,6 +194,23 @@ cmd_get(int argc,
         }
     }
 
+ retry:
+
+  if (0 != retries)
+    {
+      if (1 == hash)
+        {
+          fprintf(stderr, "R");
+          fflush(stderr);
+        }
+    }
+
+  if (retries >= 3)
+    {
+      fprintf(stderr, "too many retries: %s (%d)\n", dpl_status_str(ret), ret);
+      goto end;
+    }
+
   if (1 == start_inited && 1 == end_inited)
     {
       char *data_buf;
@@ -201,8 +219,8 @@ cmd_get(int argc,
       ret = dpl_openread_range(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, start, end, &data_buf, &data_len, &metadata);
       if (DPL_SUCCESS != ret)
         {
-          fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
-          goto end;
+          //fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+          goto retry;
         }
       ret = write_all(get_data.fd, data_buf, data_len);
       free(data_buf);
@@ -219,8 +237,8 @@ cmd_get(int argc,
       ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata);
       if (DPL_SUCCESS != ret)
         {
-          fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
-          goto end;
+          //fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+          goto retry;
         }
       if (1 == mflag)
         dpl_dict_iterate(metadata, cb_print_metadata, NULL);
