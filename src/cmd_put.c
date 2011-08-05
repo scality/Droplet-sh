@@ -52,6 +52,7 @@ cmd_put(int argc,
   struct stat st;
   int kflag = 0;
   char *buf;
+  int retries = 0;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -154,11 +155,29 @@ cmd_put(int argc,
       return SHELL_CONT;
     }
 
+ retry:
+
+  if (0 != retries)
+    {
+      if (1 == hash)
+        {
+          fprintf(stderr, "R");
+          fflush(stderr);
+        }
+    }
+
+  if (retries >= 3)
+    {
+      fprintf(stderr, "too many retries: %s (%d)\n", dpl_status_str(ret), ret);
+      return SHELL_CONT;
+    }
+
+  retries++;
+
   ret = dpl_openwrite(ctx, remote_file, DPL_VFILE_FLAG_CREAT | (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : DPL_VFILE_FLAG_MD5), metadata, canned_acl, st.st_size, &vfile);
   if (DPL_SUCCESS != ret)
     {
-      fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
-      return SHELL_CONT;
+      goto retry;
     }
 
   while (1)
@@ -179,7 +198,7 @@ cmd_put(int argc,
       if (DPL_SUCCESS != ret)
         {
           fprintf(stderr, "write failed\n");
-          return SHELL_CONT;
+          goto retry;
         }
 
       if (1 == hash)
@@ -193,7 +212,7 @@ cmd_put(int argc,
   if (DPL_SUCCESS != ret)
     {
       fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
-      return SHELL_CONT;
+      goto retry;
     }
 
   vfile = NULL;
