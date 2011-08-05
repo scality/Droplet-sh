@@ -211,7 +211,7 @@ cmd_put(int argc,
   ret = dpl_close(vfile);
   if (DPL_SUCCESS != ret)
     {
-      fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
+      //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
       goto retry;
     }
 
