@@ -24,6 +24,7 @@ struct usage_def get_usage[] =
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
     {'m', 0u, NULL, "print metadata"},
+    {'r', 0u, NULL, "raw get"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
     {0, 0u, NULL, NULL},
@@ -104,6 +105,7 @@ cmd_get(int argc,
   int end_inited = 0;
   int mflag = 0;
   int retries = 0;
+  int rflag = 0;
 
   memset(&get_data, 0, sizeof (get_data));
   get_data.fd = -1;
@@ -128,6 +130,9 @@ cmd_get(int argc,
         break ;
       case 'k':
         kflag = 1;
+        break ;
+      case 'r':
+        rflag = 1;
         break ;
       case '?':
       default:
@@ -211,12 +216,13 @@ cmd_get(int argc,
       goto end;
     }
 
-  if (1 == start_inited && 1 == end_inited)
+  if (1 == rflag)
     {
       char *data_buf;
       u_int data_len;
 
-      ret = dpl_openread_range(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, start, end, &data_buf, &data_len, &metadata);
+      //raw get
+      ret = dpl_get(ctx, ctx->cur_bucket, path, NULL, NULL, &data_buf, &data_len, &metadata);
       if (DPL_SUCCESS != ret)
         {
           if (DPL_ENOENT == ret)
@@ -233,27 +239,52 @@ cmd_get(int argc,
           fprintf(stderr, "short write\n");
           goto end;
         }
-      if (1 == mflag)
-        dpl_dict_iterate(metadata, cb_print_metadata, NULL);
     }
   else
     {
-      ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata);
-      if (DPL_SUCCESS != ret)
+      if (1 == start_inited && 1 == end_inited)
         {
-          if (DPL_ENOENT == ret)
+          char *data_buf;
+          u_int data_len;
+          
+          ret = dpl_openread_range(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, start, end, &data_buf, &data_len, &metadata);
+          if (DPL_SUCCESS != ret)
             {
-              fprintf(stderr, "no such object\n");
+              if (DPL_ENOENT == ret)
+                {
+                  fprintf(stderr, "no such object\n");
+                  goto end;
+                }
+              goto retry;
+            }
+          ret = write_all(get_data.fd, data_buf, data_len);
+          free(data_buf);
+          if (0 != ret)
+            {
+              fprintf(stderr, "short write\n");
               goto end;
             }
-          goto retry;
         }
-      if (1 == mflag)
-        dpl_dict_iterate(metadata, cb_print_metadata, NULL);
+      else
+        {
+          ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata);
+          if (DPL_SUCCESS != ret)
+            {
+              if (DPL_ENOENT == ret)
+                {
+                  fprintf(stderr, "no such object\n");
+                  goto end;
+                }
+              goto retry;
+            }
+        }
     }
 
+  if (1 == mflag)
+    dpl_dict_iterate(metadata, cb_print_metadata, NULL);
+      
   var_set("status", "0", VAR_CMD_SET, NULL);
-
+      
  end:
 
   if (NULL != metadata)
