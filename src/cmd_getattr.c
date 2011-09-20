@@ -20,6 +20,7 @@ int cmd_getattr(int argc, char **argv);
 
 struct usage_def getattr_usage[] =
   {
+    {'r', 0u, NULL, "raw getattr (show all metadata)"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote object"},
     {0, 0u, NULL, NULL},
   };
@@ -41,6 +42,7 @@ cmd_getattr(int argc,
   char opt;
   char *path = NULL;
   dpl_dict_t *metadata = NULL;
+  int rflag = 0;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -49,6 +51,9 @@ cmd_getattr(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(getattr_usage))) != -1)
     switch (opt)
       {
+      case 'r':
+        rflag = 1;
+        break ;
       case '?':
       default:
         usage_help(&getattr_cmd);
@@ -65,13 +70,25 @@ cmd_getattr(int argc,
 
   path = argv[0];
 
-  ret = dpl_getattr(ctx, path, &metadata);
-  if (DPL_SUCCESS != ret)
+  if (1 == rflag)
     {
-      fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
-      goto end;
+      ret = dpl_getattr_raw(ctx, path, &metadata);
+      if (DPL_SUCCESS != ret)
+        {
+          fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+          goto end;
+        }
     }
-
+  else
+    {
+      ret = dpl_getattr(ctx, path, &metadata);
+      if (DPL_SUCCESS != ret)
+        {
+          fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+          goto end;
+        }
+    }
+      
   dpl_dict_iterate(metadata, cb_getattr, NULL);
 
   var_set("status", "0", VAR_CMD_SET, NULL);
