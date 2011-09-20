@@ -1,6 +1,7 @@
 AC_PREREQ(2.59)
 AC_INIT([droplet-sh], [0.1.0])
 AC_CONFIG_SRCDIR([src])
+AC_CONFIG_MACRO_DIR([m4])
 
 AM_CONFIG_HEADER(config.h)
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])

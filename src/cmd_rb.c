@@ -38,7 +38,7 @@ cmd_rb(int argc,
 
   optind = 0;
 
-  while ((opt = getopt(argc, argv, usage_getoptstr(rb_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(rb_usage))) != -1)
     switch (opt)
       {
       case '?':

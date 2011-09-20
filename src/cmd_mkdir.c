@@ -38,7 +38,7 @@ cmd_mkdir(int argc,
 
   optind = 0;
 
-  while ((opt = getopt(argc, argv, "")) != -1)
+  while ((opt = linux_getopt(argc, argv, "")) != -1)
     switch (opt)
       {
       case '?':

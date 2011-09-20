@@ -23,4 +23,12 @@ int ask_for_confirmation(char *str);
 int write_all(int fd, char *buf, int len);
 int read_all(int fd, char *buf, int len);
 int read_fd(int fd, char **data_bufp, u_int *data_lenp);
+
+#if defined(__APPLE__) && defined(__MACH__) || defined(__ellcc__ )
+size_t getline(char **lineptr, size_t *n, FILE *stream);
+#endif
+
+int linux_getopt(int argc, char * const argv[],
+		 const char *optstring);
+
 #endif

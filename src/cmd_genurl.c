@@ -42,7 +42,7 @@ cmd_genurl(int argc,
 
   optind = 0;
 
-  while ((opt = getopt(argc, argv, "d:")) != -1)
+  while ((opt = linux_getopt(argc, argv, "d:")) != -1)
     switch (opt)
       {
       case 'd':

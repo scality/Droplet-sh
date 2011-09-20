@@ -165,7 +165,7 @@ cmd_ls(int argc,
 
   optind = 0;
 
-  while ((opt = getopt(argc, argv, usage_getoptstr(ls_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(ls_usage))) != -1)
     switch (opt)
       {
       case 'R':

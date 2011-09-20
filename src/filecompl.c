@@ -22,9 +22,11 @@
 #define D_NAMLEN(d)   (strlen ((d)->name))
 #define FREE free
 #define savestring(x) strcpy ((char *)xmalloc (1 + strlen (x)), (x))
-int _rl_match_hidden_files = 1;
+
+extern int _rl_match_hidden_files;
+
 #define HIDDEN_FILE(file) 0
-int rl_complete_with_tilde_expansion = 0;
+extern int rl_complete_with_tilde_expansion;
 
 void *
 do_opendir(char *path)

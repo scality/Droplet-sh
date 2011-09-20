@@ -48,7 +48,7 @@ cmd_mb(int argc,
 
   optind = 0;
 
-  while ((opt = getopt(argc, argv, usage_getoptstr(mb_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(mb_usage))) != -1)
     switch (opt)
       {
       case 'l':
