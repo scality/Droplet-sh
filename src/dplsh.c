@@ -97,7 +97,7 @@ main(int argc,
       exit(1);
     }
 
-  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(main_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_getoptstr(main_usage))) != -1)
     switch (opt)
       {
       case 'e':

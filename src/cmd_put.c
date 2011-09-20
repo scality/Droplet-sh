@@ -58,7 +58,7 @@ cmd_put(int argc,
 
   optind = 0;
 
-  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(put_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_getoptstr(put_usage))) != -1)
     switch (opt)
       {
       case 'k':

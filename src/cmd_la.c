@@ -45,7 +45,7 @@ cmd_la(int argc,
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
-  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(la_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_getoptstr(la_usage))) != -1)
     switch (opt)
       {
       case 'R':

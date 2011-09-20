@@ -114,7 +114,7 @@ cmd_get(int argc,
 
   optind = 0;
 
-  while ((opt = linux_getopt(argc, argv, usage_linux_getoptstr(get_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
       case 'm':

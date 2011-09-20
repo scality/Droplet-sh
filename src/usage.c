@@ -24,7 +24,7 @@
  * @return
  */
 char *
-usage_linux_getoptstr(struct usage_def *defs)
+usage_getoptstr(struct usage_def *defs)
 {
   static char buf[256];
   struct usage_def *def;
