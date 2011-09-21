@@ -126,7 +126,6 @@ cmd_get(int argc,
             fprintf(stderr, "bad object type\n");
             return SHELL_CONT;
           }
-        printf("%d\n", object_type);
         break ;
       case 'm':
         mflag = 1;
