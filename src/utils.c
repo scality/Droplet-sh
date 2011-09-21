@@ -222,6 +222,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream) {
 
 extern int optind;
 
+int
 linux_getopt(int argc, char * const argv[],
 	      const char *optstring) {
 
