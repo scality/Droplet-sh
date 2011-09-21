@@ -20,7 +20,7 @@ int cmd_setattr(int argc, char **argv);
 
 struct usage_def setattr_usage[] =
   {
-    {'m', USAGE_PARAM, "metadata", "semicolon separated list of variables e.g. \"var1=val1;var2=val2;...\""},
+    {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. \"var1=val1[;|,]var2=val2;...\""},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote object"},
     {0, 0u, NULL, NULL},
   };
