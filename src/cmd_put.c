@@ -25,7 +25,7 @@ struct usage_def put_usage[] =
     {'k', 0u, NULL, "encrypt file"},
     {'a', USAGE_PARAM, "canned_acl", "default is private"},
     {'A', 0u, NULL, "list available canned acls"},
-    {'m', USAGE_PARAM, "metadata", "semicolon separated list of variables e.g. var1=val1;var2=val2;..."},
+    {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, 0u, "path", "remote file"},
     {0, 0u, NULL, NULL},
