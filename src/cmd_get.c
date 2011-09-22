@@ -25,7 +25,9 @@ struct usage_def get_usage[] =
     {'e', USAGE_PARAM, "end", "range end offset"},
     {'m', 0u, NULL, "print metadata"},
     {'r', 0u, NULL, "raw get"},
+#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
     {'t', USAGE_PARAM, "object_type", "for raw get"},
+#endif
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
     {0, 0u, NULL, NULL},
@@ -107,7 +109,9 @@ cmd_get(int argc,
   int mflag = 0;
   int retries = 0;
   int rflag = 0;
+#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
   dpl_object_type_t object_type = DPL_OBJECT_TYPE_UNDEF;
+#endif
 
   memset(&get_data, 0, sizeof (get_data));
   get_data.fd = -1;
@@ -119,6 +123,7 @@ cmd_get(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
+#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
       case 't':
         object_type = dpl_object_type(optarg);
         if (-1 == object_type)
@@ -126,6 +131,7 @@ cmd_get(int argc,
             fprintf(stderr, "bad object type\n");
             return SHELL_CONT;
           }
+#endif
         break ;
       case 'm':
         mflag = 1;
@@ -232,7 +238,11 @@ cmd_get(int argc,
       u_int data_len;
 
       //raw get
-      ret = dpl_get(ctx, ctx->cur_bucket, path, NULL, object_type, NULL, &data_buf, &data_len, &metadata);
+      ret = dpl_get(ctx, ctx->cur_bucket, path, NULL, 
+#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
+                    object_type,
+#endif
+                    NULL, &data_buf, &data_len, &metadata);
       if (DPL_SUCCESS != ret)
         {
           if (DPL_ENOENT == ret)
