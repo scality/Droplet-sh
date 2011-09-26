@@ -110,7 +110,7 @@ cmd_get(int argc,
   int retries = 0;
   int rflag = 0;
 #if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
-  dpl_object_type_t object_type = DPL_OBJECT_TYPE_UNDEF;
+  dpl_ftype_t object_type = DPL_FTYPE_ANY;
 #endif
 
   memset(&get_data, 0, sizeof (get_data));
