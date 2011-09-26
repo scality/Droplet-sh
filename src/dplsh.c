@@ -60,14 +60,6 @@ var_set_hash(char *value)
   return xstrdup(value);
 }
 
-char *
-var_set_delim(char *value)
-{
-  free(ctx->delim);
-  ctx->delim = xstrdup(value);
-  return xstrdup(value);
-}
-
 struct usage_def main_usage[] =
   {
     {'e', USAGE_PARAM, "cmd", "execute command"},
@@ -146,8 +138,6 @@ main(int argc,
   var_set("block_size", "1000000", VAR_CMD_SET, NULL);
   var_set("hash", NULL, VAR_CMD_SET_SPECIAL, var_set_hash);
   var_set("hash", "1", VAR_CMD_SET, NULL);
-  var_set("delim", NULL, VAR_CMD_SET_SPECIAL, var_set_delim);
-  var_set("delim", DPL_DEFAULT_DELIM, VAR_CMD_SET, NULL);
 
   vars_load();
 
