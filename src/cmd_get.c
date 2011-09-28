@@ -191,6 +191,8 @@ cmd_get(int argc,
     }
   else if ('|' == local_file[0])
     {
+      get_data.fd = 1;
+      do_stdout = 1;
       get_data.pipe = popen(local_file + 1, "w");
       if (NULL == get_data.pipe)
         {
@@ -256,6 +258,7 @@ cmd_get(int argc,
       free(data_buf);
       if (0 != ret)
         {
+          perror("write");
           fprintf(stderr, "short write\n");
           goto end;
         }
