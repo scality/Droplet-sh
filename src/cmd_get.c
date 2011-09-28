@@ -317,10 +317,10 @@ cmd_get(int argc,
     {
       if (-1 != get_data.fd)
         close(get_data.fd);
-
-      if (NULL != get_data.pipe)
-        pclose(get_data.pipe);
     }
+
+  if (NULL != get_data.pipe)
+    pclose(get_data.pipe);
 
   return SHELL_CONT;
 }
