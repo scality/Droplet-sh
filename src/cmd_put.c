@@ -26,6 +26,8 @@ struct usage_def put_usage[] =
     {'a', USAGE_PARAM, "canned_acl", "default is private"},
     {'A', 0u, NULL, "list available canned acls"},
     {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
+    {'q', USAGE_PARAM, "query_params", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
+    {'P', 0u, NULL, "do a post"},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, 0u, "path", "remote file"},
     {0, 0u, NULL, NULL},
@@ -44,6 +46,7 @@ cmd_put(int argc,
   int i;
   int fd = -1;
   dpl_dict_t *metadata = NULL;
+  dpl_dict_t *query_params = NULL;
   char *local_file = NULL;
   char *remote_file = NULL;
   dpl_vfile_t *vfile = NULL;
@@ -53,6 +56,8 @@ cmd_put(int argc,
   int kflag = 0;
   char *buf;
   int retries = 0;
+  int Pflag = 0;
+  dpl_vfile_flag_t flags = 0u;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -72,6 +77,14 @@ cmd_put(int argc,
             return SHELL_CONT;
           }
         break ;
+      case 'q':
+        query_params = dpl_parse_metadata(optarg);
+        if (NULL == metadata)
+          {
+            fprintf(stderr, "error parsing query_params\n");
+            return SHELL_CONT;
+          }
+        break ;
       case 'a':
         canned_acl = dpl_canned_acl(optarg);
         if (-1 == canned_acl)
@@ -82,6 +95,9 @@ cmd_put(int argc,
         break ;
       case 'A':
         Aflag = 1;
+        break ;
+      case 'P':
+        Pflag = 1;
         break ;
       case '?':
       default:
@@ -174,7 +190,11 @@ cmd_put(int argc,
 
   retries++;
 
-  ret = dpl_openwrite(ctx, remote_file, DPL_VFILE_FLAG_CREAT | (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : DPL_VFILE_FLAG_MD5), metadata, canned_acl, st.st_size, &vfile);
+  flags = DPL_VFILE_FLAG_CREAT | (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : DPL_VFILE_FLAG_MD5);
+  if (Pflag)
+    flags |= DPL_VFILE_FLAG_POST;
+
+  ret = dpl_openwrite(ctx, remote_file, flags, metadata, canned_acl, st.st_size, &vfile);
   if (DPL_SUCCESS != ret)
     {
       goto retry;
@@ -226,6 +246,9 @@ cmd_put(int argc,
 
   if (NULL != metadata)
     dpl_dict_free(metadata);
+
+  if (NULL != query_params)
+    dpl_dict_free(query_params);
 
   if (NULL != vfile)
     dpl_close(vfile);

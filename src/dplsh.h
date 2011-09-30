@@ -46,7 +46,7 @@ struct ls_data
   dpl_ctx_t *ctx;
   int lflag; //print long
   int Rflag; //recursive (vdir)
-  int aflag; //list all (raw)
+  int Xflag; //list all (raw)
   int pflag; //do not print
   size_t total_size;
 };

@@ -22,7 +22,7 @@ struct usage_def la_usage[] =
   {
     {'l', 0u, NULL, "long display"},
     {'R', 0u, NULL, "recurse over buckets"},
-    {'a', 0u, NULL, "list all files in buckets (do not use vdir interface)"},
+    {'X', 0u, NULL, "list all files in buckets (do not use vdir interface)"},
     {0, 0u, NULL, NULL},
   };
 
@@ -37,7 +37,7 @@ cmd_la(int argc,
   dpl_vec_t *vec = NULL;
   int lflag = 0;
   int Rflag = 0;
-  int aflag = 0;
+  int Xflag = 0;
   int i;
   size_t total_size = 0;
 
@@ -54,8 +54,8 @@ cmd_la(int argc,
       case 'l':
         lflag = 1;
         break ;
-      case 'a':
-        aflag = 1;
+      case 'X':
+        Xflag = 1;
         break ;
       case '?':
       default:
@@ -107,7 +107,7 @@ cmd_la(int argc,
 
           ls_data.lflag = lflag;
           ls_data.Rflag = 1;
-          ls_data.aflag = aflag;
+          ls_data.Xflag = Xflag;
 
           ret = ls_recurse(&ls_data, "/", 0);
           if (DPL_SUCCESS != ret)

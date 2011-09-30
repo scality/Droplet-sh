@@ -60,6 +60,13 @@ var_set_hash(char *value)
   return xstrdup(value);
 }
 
+char *
+var_set_light_mode(char *value)
+{
+  ctx->light_mode = strtoul(value, NULL, 0);
+  return xstrdup(value);
+}
+
 struct usage_def main_usage[] =
   {
     {'e', USAGE_PARAM, "cmd", "execute command"},
@@ -138,6 +145,8 @@ main(int argc,
   var_set("block_size", "1000000", VAR_CMD_SET, NULL);
   var_set("hash", NULL, VAR_CMD_SET_SPECIAL, var_set_hash);
   var_set("hash", "1", VAR_CMD_SET, NULL);
+  var_set("light_mode", NULL, VAR_CMD_SET_SPECIAL, var_set_light_mode);
+  var_set("light_mode", "0", VAR_CMD_SET, NULL);
 
   vars_load();
 

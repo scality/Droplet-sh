@@ -37,7 +37,7 @@ ls_recurse(struct ls_data *ls_data,
 {
   int ret;
 
-  if (1 == ls_data->aflag)
+  if (1 == ls_data->Xflag)
     {
       dpl_vec_t *objects = NULL;
       int i;
@@ -155,7 +155,7 @@ cmd_ls(int argc,
   char opt;
   int ret;
   int lflag = 0;
-  int aflag = 0;
+  int Xflag = 0;
   int Rflag = 0;
   size_t total_size = 0;
   char *path;
@@ -174,7 +174,7 @@ cmd_ls(int argc,
       case 'a':
         break ;
       case 'A':
-        aflag = 1;
+        Xflag = 1;
         break ;
       case 'l':
         lflag = 1;
@@ -201,7 +201,7 @@ cmd_ls(int argc,
   ls_data.ctx = ctx;
   ls_data.lflag = lflag;
   ls_data.Rflag = Rflag;
-  ls_data.aflag = aflag;
+  ls_data.Xflag = Xflag;
 
   ret = ls_recurse(&ls_data, path, 0);
   if (DPL_SUCCESS != ret)
