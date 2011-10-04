@@ -146,9 +146,13 @@ read_fd(int fd,
         }
       else
         {
-          data_buf = realloc(data_buf, data_len + cc);
-          if (NULL == data_buf)
-            return -1;
+          char *tmp = realloc(data_buf, data_len + cc);
+          if (NULL == tmp)
+            {
+              free(data_buf);
+              return -1;
+            }
+          data_buf = tmp;
         }
 
       memcpy(data_buf + data_len, buf, cc);
