@@ -24,7 +24,7 @@ struct usage_def get_usage[] =
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
     {'m', 0u, NULL, "print metadata"},
-#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
+#if DPL_VERSION_MAJOR >= 0 || (DPL_VERSION_MAJOR == 0 && DPL_VERSION_MINOR >= 2)
     {'t', USAGE_PARAM, "object_type", "for raw get"},
 #endif
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
@@ -107,7 +107,7 @@ cmd_get(int argc,
   int end_inited = 0;
   int mflag = 0;
   int retries = 0;
-#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
+#if DPL_VERSION_MAJOR >= 0 || (DPL_VERSION_MAJOR == 0 && DPL_VERSION_MINOR >= 2)
   dpl_ftype_t object_type = DPL_FTYPE_ANY;
 #endif
 
@@ -121,7 +121,7 @@ cmd_get(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
-#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
+#if DPL_VERSION_MAJOR >= 0 || (DPL_VERSION_MAJOR == 0 && DPL_VERSION_MINOR >= 2)
       case 't':
         object_type = dpl_object_type(optarg);
         if (-1 == object_type)

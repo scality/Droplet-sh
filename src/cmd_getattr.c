@@ -20,7 +20,7 @@ int cmd_getattr(int argc, char **argv);
 
 struct usage_def getattr_usage[] =
   {
-#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
+#if DPL_VERSION_MAJOR >= 0 || (DPL_VERSION_MAJOR == 0 && DPL_VERSION_MINOR >= 2)
     {'r', 0u, NULL, "raw getattr (show all metadata)"},
 #endif
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote object"},
@@ -74,7 +74,7 @@ cmd_getattr(int argc,
 
   if (1 == rflag)
     {
-#if DPL_VERSION_MAJOR >= 0 && DPL_VERSION_MINOR >= 2
+#if DPL_VERSION_MAJOR >= 0 || (DPL_VERSION_MAJOR == 0 && DPL_VERSION_MINOR >= 2)
       ret = dpl_getattr_raw(ctx, path, &metadata);
       if (DPL_SUCCESS != ret)
         {
