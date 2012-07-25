@@ -236,7 +236,7 @@ cmd_get(int argc,
       char *data_buf;
       u_int data_len;
       
-      ret = dpl_openread_range(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, start, end, &data_buf, &data_len, &metadata);
+      ret = dpl_openread_range(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, start, end, &data_buf, &data_len, &metadata, NULL);
       if (DPL_SUCCESS != ret)
         {
           if (DPL_ENOENT == ret)
@@ -256,7 +256,7 @@ cmd_get(int argc,
     }
   else
     {
-      ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata);
+      ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata, NULL);
       if (DPL_SUCCESS != ret)
         {
           if (DPL_ENOENT == ret)

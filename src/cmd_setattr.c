@@ -67,7 +67,7 @@ cmd_setattr(int argc,
 
   path = argv[0];
 
-  ret = dpl_setattr(ctx, path, metadata);
+  ret = dpl_setattr(ctx, path, metadata, NULL);
   if (DPL_SUCCESS != ret)
     {
       fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
