@@ -39,6 +39,9 @@
 #include "shell.h"
 #include "utils.h"
 
+#define DPLSH_VERSION_MAJOR 1
+#define DPLSH_VERSION_MINOR 0
+
 #define DPLSHRC ".dplshrc"
 
 struct ls_data
