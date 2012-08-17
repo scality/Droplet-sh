@@ -286,6 +286,7 @@ file_completion(const char *text,
           DPRINTF("return temp='%s'\n", temp);
         }
 
+      rl_completion_suppress_append = 1;
       return (temp);
     }
 }
