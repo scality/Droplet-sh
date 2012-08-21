@@ -47,6 +47,13 @@ var_set_trace_level(char *value)
 }
 
 char *
+var_set_trace_buffers(char *value)
+{
+  ctx->trace_buffers = atoi(value);
+  return xstrdup(value);
+}
+
+char *
 var_set_block_size(char *value)
 {
   block_size = strtoul(value, NULL, 0);
@@ -141,6 +148,8 @@ main(int argc,
   var_set("status", "0", VAR_CMD_SET, NULL);
   var_set("trace_level", NULL, VAR_CMD_SET_SPECIAL, var_set_trace_level);
   var_set("trace_level", "0", VAR_CMD_SET, NULL);
+  var_set("trace_buffers", NULL, VAR_CMD_SET_SPECIAL, var_set_trace_buffers);
+  var_set("trace_buffers", "0", VAR_CMD_SET, NULL);
   var_set("block_size", NULL, VAR_CMD_SET_SPECIAL, var_set_block_size);
   var_set("block_size", "1000000", VAR_CMD_SET, NULL);
   var_set("hash", NULL, VAR_CMD_SET_SPECIAL, var_set_hash);
