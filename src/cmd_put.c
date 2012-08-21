@@ -28,6 +28,8 @@ struct usage_def put_usage[] =
     {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'q', USAGE_PARAM, "query_params", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'P', 0u, NULL, "do a post"},
+    {'X', 0u, NULL, "raw put"},
+    {'t', USAGE_PARAM, "object_type", "for raw put"},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, 0u, "path", "remote file"},
     {0, 0u, NULL, NULL},
@@ -58,6 +60,9 @@ cmd_put(int argc,
   int retries = 0;
   int Pflag = 0;
   dpl_vfile_flag_t flags = 0u;
+  int Xflag = 0;
+  dpl_ftype_t object_type;
+  dpl_sysmd_t sysmd;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -98,6 +103,17 @@ cmd_put(int argc,
         break ;
       case 'P':
         Pflag = 1;
+        break ;
+      case 't':
+        object_type = dpl_object_type(optarg);
+        if (-1 == object_type)
+          {
+            fprintf(stderr, "bad object type\n");
+            return SHELL_CONT;
+          }
+        break ;
+      case 'X':
+        Xflag = 1;
         break ;
       case '?':
       default:
@@ -155,6 +171,10 @@ cmd_put(int argc,
       return SHELL_CONT;
     }
 
+  memset(&sysmd, 0, sizeof (sysmd));
+  sysmd.mask = DPL_SYSMD_MASK_CANNED_ACL;
+  sysmd.canned_acl = canned_acl;
+
   fd = open(local_file, O_RDONLY);
   if (-1 == fd)
     {
@@ -162,14 +182,17 @@ cmd_put(int argc,
       goto end;
     }
 
-  buf = alloca(block_size);
-
   ret = fstat(fd, &st);
   if (-1 == ret)
     {
       perror("fstat");
       return SHELL_CONT;
     }
+
+  if (Xflag)
+    buf = alloca(st.st_size);
+  else
+    buf = alloca(block_size);
 
  retry:
 
@@ -190,52 +213,70 @@ cmd_put(int argc,
 
   retries++;
 
-  flags = DPL_VFILE_FLAG_CREAT | (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : DPL_VFILE_FLAG_MD5);
-  if (Pflag)
-    flags |= DPL_VFILE_FLAG_POST;
-
-  ret = dpl_openwrite(ctx, remote_file, flags, metadata, canned_acl, st.st_size, &vfile);
-  if (DPL_SUCCESS != ret)
+  if (Xflag)
     {
-      goto retry;
-    }
-
-  while (1)
-    {
-      cc = read(fd, buf, block_size);
+      cc = read(fd, buf, st.st_size);
       if (-1 == cc)
         {
           perror("read");
-          return -1;
+          goto end;
         }
 
-      if (0 == cc)
-        {
-          break ;
-        }
-
-      ret = dpl_write(vfile, buf, cc);
+      ret = dpl_vfs_put(ctx, remote_file, metadata, &sysmd, buf, st.st_size);
       if (DPL_SUCCESS != ret)
         {
-          fprintf(stderr, "write failed\n");
           goto retry;
         }
-
-      if (1 == hash)
-        {
-          fprintf(stderr, "#");
-          fflush(stderr);
-        }
     }
-
-  ret = dpl_close(vfile);
-  if (DPL_SUCCESS != ret)
+  else
     {
-      //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
-      goto retry;
+      flags = DPL_VFILE_FLAG_CREAT | (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : DPL_VFILE_FLAG_MD5);
+      if (Pflag)
+        flags |= DPL_VFILE_FLAG_POST;
+      
+      ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, metadata, &sysmd, st.st_size, NULL, &vfile);
+      if (DPL_SUCCESS != ret)
+        {
+          goto retry;
+        }
+      
+      while (1)
+        {
+          cc = read(fd, buf, block_size);
+          if (-1 == cc)
+            {
+              perror("read");
+              goto end;
+            }
+          
+          if (0 == cc)
+            {
+              break ;
+            }
+          
+          ret = dpl_write(vfile, buf, cc);
+          if (DPL_SUCCESS != ret)
+            {
+              fprintf(stderr, "write failed\n");
+              goto retry;
+            }
+          
+          if (1 == hash)
+            {
+              fprintf(stderr, "#");
+              fflush(stderr);
+            }
+        }
+      
+      ret = dpl_close(vfile);
+      if (DPL_SUCCESS != ret)
+        {
+          //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
+          goto retry;
+        }
+      
+      vfile = NULL;
     }
-
-  vfile = NULL;
 
   var_set("status", "0", VAR_CMD_SET, NULL);
 
