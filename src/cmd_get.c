@@ -194,7 +194,7 @@ cmd_get(int argc,
             return SHELL_CONT;
         }
 
-      get_data.fd = open(local_file, O_WRONLY|O_CREAT, 0600);
+      get_data.fd = open(local_file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
       if (-1 == get_data.fd)
         {
           perror("open");
