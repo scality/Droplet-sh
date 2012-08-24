@@ -24,7 +24,7 @@ struct usage_def get_usage[] =
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
     {'m', 0u, NULL, "print metadata"},
-    {'X', 0u, NULL, "raw get"},
+    {'r', 0u, NULL, "raw get"},
     {'t', USAGE_PARAM, "object_type", "for raw get"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
@@ -107,7 +107,7 @@ cmd_get(int argc,
   int mflag = 0;
   int retries = 0;
   dpl_ftype_t object_type = DPL_FTYPE_ANY;
-  int Xflag = 0;
+  int rflag = 0;
 
   memset(&get_data, 0, sizeof (get_data));
   get_data.fd = -1;
@@ -141,8 +141,8 @@ cmd_get(int argc,
       case 'k':
         kflag = 1;
         break ;
-      case 'X':
-        Xflag = 1;
+      case 'r':
+        rflag = 1;
         break ;
       case '?':
       default:
@@ -255,7 +255,7 @@ cmd_get(int argc,
     }
   else
     {
-      if (Xflag)
+      if (rflag)
         {
           char *data_buf;
           u_int data_len;

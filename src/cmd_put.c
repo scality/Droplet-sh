@@ -28,7 +28,7 @@ struct usage_def put_usage[] =
     {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'q', USAGE_PARAM, "query_params", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'P', 0u, NULL, "do a post"},
-    {'X', 0u, NULL, "raw put"},
+    {'r', 0u, NULL, "raw put"},
     {'t', USAGE_PARAM, "object_type", "for raw put"},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, 0u, "path", "remote file"},
@@ -60,7 +60,7 @@ cmd_put(int argc,
   int retries = 0;
   int Pflag = 0;
   dpl_vfile_flag_t flags = 0u;
-  int Xflag = 0;
+  int rflag = 0;
   dpl_ftype_t object_type;
   dpl_sysmd_t sysmd;
 
@@ -112,8 +112,8 @@ cmd_put(int argc,
             return SHELL_CONT;
           }
         break ;
-      case 'X':
-        Xflag = 1;
+      case 'r':
+        rflag = 1;
         break ;
       case '?':
       default:
@@ -189,7 +189,7 @@ cmd_put(int argc,
       return SHELL_CONT;
     }
 
-  if (Xflag)
+  if (rflag)
     buf = alloca(st.st_size);
   else
     buf = alloca(block_size);
@@ -213,7 +213,7 @@ cmd_put(int argc,
 
   retries++;
 
-  if (Xflag)
+  if (rflag)
     {
       cc = read(fd, buf, st.st_size);
       if (-1 == cc)
