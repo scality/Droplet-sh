@@ -23,13 +23,13 @@ int cmd_put(int argc, char **argv);
 struct usage_def put_usage[] =
   {
     {'k', 0u, NULL, "encrypt file"},
+    {'M', 0u, NULL, "compute MD5"},
     {'a', USAGE_PARAM, "canned_acl", "default is private"},
     {'A', 0u, NULL, "list available canned acls"},
     {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'q', USAGE_PARAM, "query_params", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'P', 0u, NULL, "do a post"},
-    {'r', 0u, NULL, "raw put"},
-    {'t', USAGE_PARAM, "object_type", "for raw put"},
+    {'O', 0u, NULL, "one shot put"},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, 0u, "path", "remote file"},
     {0, 0u, NULL, NULL},
@@ -60,8 +60,8 @@ cmd_put(int argc,
   int retries = 0;
   int Pflag = 0;
   dpl_vfile_flag_t flags = 0u;
-  int rflag = 0;
-  dpl_ftype_t object_type;
+  int Oflag = 0;
+  int Mflag = 0;
   dpl_sysmd_t sysmd;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
@@ -73,6 +73,9 @@ cmd_put(int argc,
       {
       case 'k':
         kflag = 1;
+        break ;
+      case 'M':
+        Mflag = 1;
         break ;
       case 'm':
         metadata = dpl_parse_metadata(optarg);
@@ -104,16 +107,8 @@ cmd_put(int argc,
       case 'P':
         Pflag = 1;
         break ;
-      case 't':
-        object_type = dpl_object_type(optarg);
-        if (-1 == object_type)
-          {
-            fprintf(stderr, "bad object type\n");
-            return SHELL_CONT;
-          }
-        break ;
-      case 'r':
-        rflag = 1;
+      case 'O':
+        Oflag = 1;
         break ;
       case '?':
       default:
@@ -189,10 +184,20 @@ cmd_put(int argc,
       return SHELL_CONT;
     }
 
-  if (rflag)
-    buf = alloca(st.st_size);
-  else
-    buf = alloca(block_size);
+  if (Oflag)
+    block_size = st.st_size;
+
+  buf = alloca(block_size);
+
+  flags = DPL_VFILE_FLAG_CREAT;
+  if (kflag)
+    flags |= DPL_VFILE_FLAG_ENCRYPT;
+  else if (Mflag)
+    flags |= DPL_VFILE_FLAG_MD5;
+  if (Pflag)
+    flags |= DPL_VFILE_FLAG_POST;
+  if (Oflag)
+    flags |= DPL_VFILE_FLAG_ONESHOT;
 
  retry:
 
@@ -212,71 +217,49 @@ cmd_put(int argc,
     }
 
   retries++;
-
-  if (rflag)
+      
+  ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, metadata, &sysmd, st.st_size, NULL, &vfile);
+  if (DPL_SUCCESS != ret)
     {
-      cc = read(fd, buf, st.st_size);
+      goto retry;
+    }
+  
+  while (1)
+    {
+      cc = read(fd, buf, block_size);
       if (-1 == cc)
         {
           perror("read");
           goto end;
         }
-
-      ret = dpl_vfs_put(ctx, remote_file, metadata, &sysmd, buf, st.st_size);
+      
+      if (0 == cc)
+        {
+          break ;
+        }
+      
+      ret = dpl_write(vfile, buf, cc);
       if (DPL_SUCCESS != ret)
         {
+          fprintf(stderr, "write failed\n");
           goto retry;
         }
+      
+      if (1 == hash)
+        {
+          fprintf(stderr, "#");
+          fflush(stderr);
+        }
     }
-  else
+  
+  ret = dpl_close(vfile);
+  if (DPL_SUCCESS != ret)
     {
-      flags = DPL_VFILE_FLAG_CREAT | (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : DPL_VFILE_FLAG_MD5);
-      if (Pflag)
-        flags |= DPL_VFILE_FLAG_POST;
-      
-      ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, metadata, &sysmd, st.st_size, NULL, &vfile);
-      if (DPL_SUCCESS != ret)
-        {
-          goto retry;
-        }
-      
-      while (1)
-        {
-          cc = read(fd, buf, block_size);
-          if (-1 == cc)
-            {
-              perror("read");
-              goto end;
-            }
-          
-          if (0 == cc)
-            {
-              break ;
-            }
-          
-          ret = dpl_write(vfile, buf, cc);
-          if (DPL_SUCCESS != ret)
-            {
-              fprintf(stderr, "write failed\n");
-              goto retry;
-            }
-          
-          if (1 == hash)
-            {
-              fprintf(stderr, "#");
-              fflush(stderr);
-            }
-        }
-      
-      ret = dpl_close(vfile);
-      if (DPL_SUCCESS != ret)
-        {
-          //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
-          goto retry;
-        }
-      
-      vfile = NULL;
+      //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
+      goto retry;
     }
+  
+  vfile = NULL;
 
   var_set("status", "0", VAR_CMD_SET, NULL);
 

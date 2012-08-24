@@ -24,8 +24,7 @@ struct usage_def get_usage[] =
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
     {'m', 0u, NULL, "print metadata"},
-    {'r', 0u, NULL, "raw get"},
-    {'t', USAGE_PARAM, "object_type", "for raw get"},
+    {'O', 0u, NULL, "one shot get"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
     {0, 0u, NULL, NULL},
@@ -106,8 +105,8 @@ cmd_get(int argc,
   int end_inited = 0;
   int mflag = 0;
   int retries = 0;
-  dpl_ftype_t object_type = DPL_FTYPE_ANY;
-  int rflag = 0;
+  int Oflag = 0;
+  dpl_vfile_flag_t flags;
 
   memset(&get_data, 0, sizeof (get_data));
   get_data.fd = -1;
@@ -119,14 +118,6 @@ cmd_get(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
-      case 't':
-        object_type = dpl_object_type(optarg);
-        if (-1 == object_type)
-          {
-            fprintf(stderr, "bad object type\n");
-            return SHELL_CONT;
-          }
-        break ;
       case 'm':
         mflag = 1;
         break ;
@@ -141,8 +132,8 @@ cmd_get(int argc,
       case 'k':
         kflag = 1;
         break ;
-      case 'r':
-        rflag = 1;
+      case 'O':
+        Oflag = 1;
         break ;
       case '?':
       default:
@@ -211,6 +202,14 @@ cmd_get(int argc,
         }
     }
 
+  flags = 0u;
+  if (kflag)
+    flags |= DPL_VFILE_FLAG_ENCRYPT;
+  if (Oflag)
+    flags |= DPL_VFILE_FLAG_ONESHOT;
+  if (start_inited || end_inited)
+    flags |= DPL_VFILE_FLAG_RANGE;
+
  retry:
 
   if (0 != retries)
@@ -230,67 +229,15 @@ cmd_get(int argc,
 
   retries++;
 
-  if (1 == start_inited && 1 == end_inited)
+  ret = dpl_openread(ctx, path, flags, NULL, start, end, cb_get_buffered, &get_data, &metadata, NULL);
+  if (DPL_SUCCESS != ret)
     {
-      char *data_buf;
-      u_int data_len;
-
-      ret = dpl_vfs_get_range(ctx, path, NULL, start, end, &data_buf, &data_len, &metadata, NULL);
-      if (DPL_SUCCESS != ret)
+      if (DPL_ENOENT == ret)
         {
-          if (DPL_ENOENT == ret)
-            {
-              fprintf(stderr, "no such object\n");
-              goto end;
-            }
-          goto retry;
-        }
-      ret = write_all(get_data.fd, data_buf, data_len);
-      free(data_buf);
-      if (0 != ret)
-        {
-          fprintf(stderr, "short write\n");
+          fprintf(stderr, "no such object\n");
           goto end;
         }
-    }
-  else
-    {
-      if (rflag)
-        {
-          char *data_buf;
-          u_int data_len;
-
-          ret = dpl_vfs_get(ctx, path, NULL, &data_buf, &data_len, &metadata, NULL);
-          if (DPL_SUCCESS != ret)
-            {
-              if (DPL_ENOENT == ret)
-                {
-                  fprintf(stderr, "no such object\n");
-                  goto end;
-                }
-              goto retry;
-            }
-          ret = write_all(get_data.fd, data_buf, data_len);
-          free(data_buf);
-          if (0 != ret)
-            {
-              fprintf(stderr, "short write\n");
-              goto end;
-            }
-        }
-      else
-        {
-          ret = dpl_openread(ctx, path, (1 == kflag ? DPL_VFILE_FLAG_ENCRYPT : 0u), NULL, cb_get_buffered, &get_data, &metadata, NULL);
-          if (DPL_SUCCESS != ret)
-            {
-              if (DPL_ENOENT == ret)
-                {
-                  fprintf(stderr, "no such object\n");
-                  goto end;
-                }
-              goto retry;
-            }
-        }
+      goto retry;
     }
 
   if (1 == mflag)
