@@ -24,6 +24,7 @@ struct usage_def cp_usage[] =
     {'s', 0u, NULL, "symlink"},
     {'l', 0u, NULL, "hardlink"},
     {'m', 0u, NULL, "move"},
+    {'d', 0u, NULL, "mkdent"},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, USAGE_MANDAT, "remote_file", "remote file"},
     {0, 0u, NULL, NULL},
@@ -55,10 +56,13 @@ cmd_cp(int argc,
         copy_directive = DPL_COPY_DIRECTIVE_SYMLINK;
         break ;
       case 'l':
-        copy_directive = DPL_COPY_DIRECTIVE_HARDLINK;
+        copy_directive = DPL_COPY_DIRECTIVE_LINK;
         break ;
       case 'm':
         copy_directive = DPL_COPY_DIRECTIVE_MOVE;
+        break ;
+      case 'd':
+        copy_directive = DPL_COPY_DIRECTIVE_MKDENT;
         break ;
       case '?':
       default:
