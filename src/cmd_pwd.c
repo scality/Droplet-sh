@@ -30,7 +30,7 @@ cmd_pwd(int argc,
         char **argv)
 {
   char opt;
-  dpl_ino_t cur_ino;
+  dpl_fqn_t cur_fqn;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -53,9 +53,9 @@ cmd_pwd(int argc,
       return SHELL_CONT;
     }
 
-  cur_ino = dpl_cwd(ctx, ctx->cur_bucket);
+  cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-  printf("%s:%s%s\n", ctx->cur_bucket, ctx->delim, cur_ino.key);
+  printf("%s:%s%s\n", ctx->cur_bucket, ctx->delim, cur_fqn.path);
 
   var_set("status", "0", VAR_CMD_SET, NULL);
 

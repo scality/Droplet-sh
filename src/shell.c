@@ -346,11 +346,11 @@ shell_do(struct cmd_def **defs)
     {
       char *line;
       char prompt[256];
-      dpl_ino_t cur_ino;
+      dpl_fqn_t cur_fqn;
 
-      cur_ino = dpl_cwd(ctx, ctx->cur_bucket);
+      cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-      snprintf(prompt, sizeof (prompt), "%s:%s%s> ", ctx->cur_bucket, ctx->delim, cur_ino.key);
+      snprintf(prompt, sizeof (prompt), "%s:%s%s> ", ctx->cur_bucket, ctx->delim, cur_fqn.path);
 
       if ((line = readline(prompt)))
         {

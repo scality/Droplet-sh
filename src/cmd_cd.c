@@ -33,11 +33,11 @@ do_cd(char *path)
 {
   int ret;
   char wd[1024];
-  dpl_ino_t cur_ino;
+  dpl_fqn_t cur_fqn;
 
-  cur_ino = dpl_cwd(ctx, ctx->cur_bucket);
+  cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-  snprintf(wd, sizeof (wd), "%s:%s%s", ctx->cur_bucket, ctx->delim, cur_ino.key);
+  snprintf(wd, sizeof (wd), "%s:%s%s", ctx->cur_bucket, ctx->delim, cur_fqn.path);
 
   ret = dpl_chdir(ctx, path);
   if (DPL_SUCCESS != ret)

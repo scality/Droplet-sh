@@ -61,11 +61,11 @@ ls_recurse(struct ls_data *ls_data,
                   struct tm *stm;
 
                   stm = localtime(&obj->last_modified);
-                  printf("%12llu %04d-%02d-%02d %02d:%02d %s\n", (unsigned long long) obj->size, 1900 + stm->tm_year, 1 + stm->tm_mon, stm->tm_mday, stm->tm_hour, stm->tm_min, obj->key);
+                  printf("%12llu %04d-%02d-%02d %02d:%02d %s\n", (unsigned long long) obj->size, 1900 + stm->tm_year, 1 + stm->tm_mon, stm->tm_mday, stm->tm_hour, stm->tm_min, obj->path);
                 }
               else
                 {
-                  printf("%s\n", obj->key);
+                  printf("%s\n", obj->path);
                 }
             }
 
@@ -79,7 +79,7 @@ ls_recurse(struct ls_data *ls_data,
     {
       void *dir_hdl;
       dpl_dirent_t entry;
-      dpl_ino_t cur_ino;
+      dpl_fqn_t cur_fqn;
 
       if (1 == ls_data->Rflag)
         {
@@ -87,9 +87,9 @@ ls_recurse(struct ls_data *ls_data,
           if (DPL_SUCCESS != ret)
             return ret;
 
-          cur_ino = dpl_cwd(ctx, ctx->cur_bucket);
+          cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-          printf("%s%s%s:\n", 0 == level ? "" : "\n", ctx->delim, cur_ino.key);
+          printf("%s%s%s:\n", 0 == level ? "" : "\n", ctx->delim, cur_fqn.path);
 
           ret = dpl_opendir(ctx, ".", &dir_hdl);
           if (DPL_SUCCESS != ret)
