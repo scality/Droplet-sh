@@ -90,6 +90,7 @@ struct cmd_def	*cmd_defs[] =
     &get_cmd,
     &getattr_cmd,
     &help_cmd,
+    &idof_cmd,
     &lcd_cmd,
     &la_cmd,
     &ls_cmd,

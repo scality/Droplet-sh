@@ -22,6 +22,7 @@ dplsh_SOURCES = \
 	cmd_setattr.c \
 	cmd_set.c \
 	cmd_unset.c \
+	cmd_idof.c \
 	dplsh.c \
 	filecompl.c \
 	shell.c \

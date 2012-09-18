@@ -16,40 +16,35 @@
 
 #include "dplsh.h"
 
-int cmd_getattr(int argc, char **argv);
+int cmd_idof(int argc, char **argv);
 
-struct usage_def getattr_usage[] =
+struct usage_def idof_usage[] =
   {
-    {'r', 0u, NULL, "raw getattr (show all metadata)"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote object"},
     {0, 0u, NULL, NULL},
   };
 
-struct cmd_def getattr_cmd = {"getattr", "dump attributes of object", getattr_usage, cmd_getattr};
+struct cmd_def idof_cmd = {"idof", "get object id", idof_usage, cmd_idof};
 
 int
-cmd_getattr(int argc,
+cmd_idof(int argc,
          char **argv)
 {
   int ret;
   char opt;
   char *path = NULL;
-  dpl_dict_t *metadata = NULL;
-  int rflag = 0;
+  dpl_sysmd_t sysmd;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
   optind = 0;
 
-  while ((opt = linux_getopt(argc, argv, usage_getoptstr(getattr_usage))) != -1)
+  while ((opt = linux_getopt(argc, argv, usage_getoptstr(idof_usage))) != -1)
     switch (opt)
       {
-      case 'r':
-        rflag = 1;
-        break ;
       case '?':
       default:
-        usage_help(&getattr_cmd);
+        usage_help(&idof_cmd);
       return SHELL_CONT;
       }
   argc -= optind;
@@ -57,39 +52,27 @@ cmd_getattr(int argc,
 
   if (1 != argc)
     {
-      usage_help(&getattr_cmd);
+      usage_help(&idof_cmd);
       return SHELL_CONT;
     }
 
   path = argv[0];
 
-  if (1 == rflag)
+  ret = dpl_getattr(ctx, path, NULL, &sysmd);
+  if (DPL_SUCCESS != ret)
     {
-      ret = dpl_getattr_raw(ctx, path, &metadata);
-      if (DPL_SUCCESS != ret)
-        {
-          fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
-          goto end;
-        }
+      fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+      goto end;
     }
+      
+  if (sysmd.mask & DPL_SYSMD_MASK_ID)
+    printf("%s\n", sysmd.id);
   else
-    {
-      ret = dpl_getattr(ctx, path, &metadata, NULL);
-      if (DPL_SUCCESS != ret)
-        {
-          fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
-          goto end;
-        }
-    }
-  
-  dpl_dict_print(metadata, stdout, 0);
+    fprintf(stderr, "unable to get resource id\n");
 
   var_set("status", "0", VAR_CMD_SET, NULL);
 
  end:
-
-  if (NULL != metadata)
-    dpl_dict_free(metadata);
 
   return SHELL_CONT;
 }
