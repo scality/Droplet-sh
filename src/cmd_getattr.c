@@ -20,7 +20,8 @@ int cmd_getattr(int argc, char **argv);
 
 struct usage_def getattr_usage[] =
   {
-    {'r', 0u, NULL, "raw getattr (show all metadata)"},
+    {'r', 0u, NULL, "raw getattr"},
+    {'s', 0u, NULL, "get sysmd"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote object"},
     {0, 0u, NULL, NULL},
   };
@@ -35,7 +36,9 @@ cmd_getattr(int argc,
   char opt;
   char *path = NULL;
   dpl_dict_t *metadata = NULL;
+  dpl_sysmd_t sysmd;
   int rflag = 0;
+  int sflag = 0;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -46,6 +49,9 @@ cmd_getattr(int argc,
       {
       case 'r':
         rflag = 1;
+        break ;
+      case 's':
+        sflag = 1;
         break ;
       case '?':
       default:
@@ -71,19 +77,22 @@ cmd_getattr(int argc,
           fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
           goto end;
         }
+      dpl_dict_print(metadata, stdout, 0);
     }
   else
     {
-      ret = dpl_getattr(ctx, path, &metadata, NULL);
+      ret = dpl_getattr(ctx, path, sflag ? NULL : &metadata, sflag ? &sysmd : NULL);
       if (DPL_SUCCESS != ret)
         {
           fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
           goto end;
         }
+      if (sflag)
+        dpl_sysmd_print(&sysmd, stdout);
+      else 
+        dpl_dict_print(metadata, stdout, 0);
     }
   
-  dpl_dict_print(metadata, stdout, 0);
-
   var_set("status", "0", VAR_CMD_SET, NULL);
 
  end:

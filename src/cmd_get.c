@@ -23,7 +23,6 @@ struct usage_def get_usage[] =
     {'k', 0u, NULL, "encrypt file"},
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
-    {'m', 0u, NULL, "print metadata"},
     {'O', 0u, NULL, "one shot get"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
@@ -94,7 +93,6 @@ cmd_get(int argc,
   int ret;
   char opt;
   char *path = NULL;
-  dpl_dict_t *metadata = NULL;
   struct get_data get_data;
   int do_stdout = 0;
   int kflag = 0;
@@ -103,7 +101,6 @@ cmd_get(int argc,
   int start_inited = 0;
   int end = -1;
   int end_inited = 0;
-  int mflag = 0;
   int retries = 0;
   int Oflag = 0;
   dpl_vfile_flag_t flags;
@@ -118,9 +115,6 @@ cmd_get(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
-      case 'm':
-        mflag = 1;
-        break ;
       case 's':
         start = strtol(optarg, NULL, 0);
         start_inited = 1;
@@ -229,7 +223,7 @@ cmd_get(int argc,
 
   retries++;
 
-  ret = dpl_openread(ctx, path, flags, NULL, start, end, cb_get_buffered, &get_data, &metadata, NULL);
+  ret = dpl_openread(ctx, path, flags, NULL, start, end, cb_get_buffered, &get_data, NULL, NULL);
   if (DPL_SUCCESS != ret)
     {
       if (DPL_ENOENT == ret)
@@ -240,15 +234,9 @@ cmd_get(int argc,
       goto retry;
     }
 
-  if (1 == mflag)
-    dpl_dict_iterate(metadata, cb_print_metadata, NULL);
-      
   var_set("status", "0", VAR_CMD_SET, NULL);
       
  end:
-
-  if (NULL != metadata)
-    dpl_dict_free(metadata);
 
   if (0 == do_stdout)
     {
