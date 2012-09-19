@@ -79,13 +79,6 @@ cb_get_buffered(void *cb_arg,
   return ret;
 }
 
-static void
-cb_print_metadata(dpl_var_t *var,
-                  void *cb_arg)
-{
-  fprintf(stderr, "%s=%s\n", var->key, var->value);
-}
-
 int
 cmd_get(int argc,
         char **argv)

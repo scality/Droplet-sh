@@ -52,7 +52,7 @@ ls_recurse(struct ls_data *ls_data,
 
       for (i = 0;i < objects->n_items;i++)
         {
-          dpl_object_t *obj = (dpl_object_t *) objects->array[i];
+          dpl_object_t *obj = (dpl_object_t *) dpl_vec_get(objects, i);
 
           if (0 == ls_data->pflag)
             {

@@ -82,7 +82,7 @@ cmd_la(int argc,
     {
       dpl_bucket_t *bucket;
 
-      bucket = vec->array[i];
+      bucket = dpl_vec_get(vec, i);
       if (1 == lflag)
         {
           struct tm *stm;

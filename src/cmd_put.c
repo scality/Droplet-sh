@@ -43,7 +43,7 @@ cmd_put(int argc,
 {
   int ret;
   char opt;
-  dpl_canned_acl_t canned_acl = DPL_CANNED_ACL_PRIVATE;
+  dpl_canned_acl_t canned_acl = DPL_CANNED_ACL_UNDEF;
   int Aflag = 0;
   int i;
   int fd = -1;
@@ -167,8 +167,12 @@ cmd_put(int argc,
     }
 
   memset(&sysmd, 0, sizeof (sysmd));
-  sysmd.mask = DPL_SYSMD_MASK_CANNED_ACL;
-  sysmd.canned_acl = canned_acl;
+
+  if (DPL_CANNED_ACL_UNDEF != canned_acl)
+    {
+      sysmd.mask = DPL_SYSMD_MASK_CANNED_ACL;
+      sysmd.canned_acl = canned_acl;
+    }
 
   fd = open(local_file, O_RDONLY);
   if (-1 == fd)
