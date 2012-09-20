@@ -113,9 +113,25 @@ ls_recurse(struct ls_data *ls_data,
               if (ls_data->lflag)
                 {
                   struct tm *stm;
+                  dpl_sysmd_t sysmd;
 
-                  stm = localtime(&entry.last_modified);
-                  printf("%12llu %04d-%02d-%02d %02d:%02d %s\n", (unsigned long long) entry.size, 1900 + stm->tm_year, 1 + stm->tm_mon, stm->tm_mday, stm->tm_hour, stm->tm_min, entry.name);
+                  memset(&sysmd, 0, sizeof (sysmd));
+
+                  if (!strcmp((char *) dpl_get_backend_name(ctx), "s3"))
+                    {
+                      //optim for S3
+                      sysmd.mtime = entry.last_modified;
+                      sysmd.size = entry.size;
+                    }
+                  else
+                    {
+                      ret = dpl_getattr(ctx, entry.name, NULL, &sysmd);
+                      if (DPL_SUCCESS != ret)
+                        fprintf(stderr, "stat: %s failed: %s (%d)\n", entry.name, dpl_status_str(ret), ret);
+                    }
+
+                  stm = localtime(&sysmd.mtime);
+                  printf("%12llu %04d-%02d-%02d %02d:%02d %s\n", (unsigned long long) sysmd.size, 1900 + stm->tm_year, 1 + stm->tm_mon, stm->tm_mday, stm->tm_hour, stm->tm_min, entry.name);
                 }
               else
                 {
