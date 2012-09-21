@@ -101,7 +101,7 @@ cmd_rm(int argc,
   char opt;
   char *path = NULL;
   int rflag = 0;
-  int fflag = 0;
+  __attribute__((unused)) int fflag = 0;
   int verbose = 0;
 
   var_set("status", "1", VAR_CMD_SET, NULL);

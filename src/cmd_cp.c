@@ -20,8 +20,8 @@ int cmd_cp(int argc, char **argv);
 
 struct usage_def cp_usage[] =
   {
-    {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
-    {USAGE_NO_OPT, USAGE_MANDAT, "remote_file", "remote file"},
+    {USAGE_NO_OPT, USAGE_MANDAT, "src_file", "src file"},
+    {USAGE_NO_OPT, USAGE_MANDAT, "dst_file", "dst file"},
     {0, 0u, NULL, NULL},
   };
 

@@ -211,10 +211,10 @@ shell_parse(struct cmd_def **defs,
             char *str,
             enum shell_error *errp)
 {
-  int i, pos, skip_ws, comment, dblquote, ret;
+  int pos, skip_ws, comment, dblquote, ret;
   char c;
 
-  i = sargc = pos = 0;
+  sargc = pos = 0;
   comment = dblquote = 0;
   skip_ws = 1;
 

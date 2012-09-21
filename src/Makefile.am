@@ -5,6 +5,8 @@ dplsh_LDADD = $(LIBDROPLET_LIBS)
 dplsh_SOURCES = \
 	cmd_cd.c \
 	cmd_cp.c \
+	cmd_mv.c \
+	cmd_ln.c \
 	cmd_genurl.c \
 	cmd_getattr.c \
 	cmd_get.c \

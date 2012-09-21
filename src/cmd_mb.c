@@ -37,7 +37,7 @@ cmd_mb(int argc,
   int ret;
   char opt;
   char *bucket;
-  char *resource;
+  __attribute__((unused)) char *resource;
   dpl_canned_acl_t canned_acl = DPL_CANNED_ACL_PRIVATE;
   int Aflag = 0;
   int i;
