@@ -222,7 +222,7 @@ cmd_put(int argc,
 
   retries++;
       
-  ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, metadata, &sysmd, st.st_size, NULL, &vfile);
+  ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, NULL, metadata, &sysmd, st.st_size, NULL, &vfile);
   if (DPL_SUCCESS != ret)
     {
       goto retry;

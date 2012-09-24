@@ -90,9 +90,8 @@ cmd_get(int argc,
   int do_stdout = 0;
   int kflag = 0;
   char *local_file = NULL;
-  int start = -1;
+  dpl_range_t range;
   int start_inited = 0;
-  int end = -1;
   int end_inited = 0;
   int retries = 0;
   int Oflag = 0;
@@ -105,15 +104,16 @@ cmd_get(int argc,
 
   optind = 0;
 
+  range.start = range.end = DPL_UNDEF;
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
       case 's':
-        start = strtol(optarg, NULL, 0);
+        range.start = strtol(optarg, NULL, 0);
         start_inited = 1;
         break ;
       case 'e':
-        end = strtol(optarg, NULL, 0);
+        range.end = strtol(optarg, NULL, 0);
         end_inited = 1;
         break ;
       case 'k':
@@ -216,7 +216,7 @@ cmd_get(int argc,
 
   retries++;
 
-  ret = dpl_openread(ctx, path, flags, NULL, start, end, cb_get_buffered, &get_data, NULL, NULL);
+  ret = dpl_openread(ctx, path, flags, NULL, &range, cb_get_buffered, &get_data, NULL, NULL);
   if (DPL_SUCCESS != ret)
     {
       if (DPL_ENOENT == ret)
