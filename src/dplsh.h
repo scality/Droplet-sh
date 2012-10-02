@@ -33,6 +33,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <droplet.h>
+#include <droplet/vfs.h>
 #include "xfuncs.h"
 #include "usage.h"
 #include "vars.h"

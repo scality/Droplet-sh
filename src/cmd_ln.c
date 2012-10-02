@@ -21,7 +21,6 @@ int cmd_ln(int argc, char **argv);
 struct usage_def ln_usage[] =
   {
     {'s', 0, NULL, "symbolic link"},
-    {'d', 0, NULL, "make dentry"},
     {USAGE_NO_OPT, USAGE_MANDAT, "src_file", "src file"},
     {USAGE_NO_OPT, USAGE_MANDAT, "dst_file", "dst file"},
     {0, 0u, NULL, NULL},
@@ -38,7 +37,6 @@ cmd_ln(int argc,
   char *src_path = NULL;
   char *dst_path = NULL;
   int sflag = 0;
-  int dflag = 0;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -49,9 +47,6 @@ cmd_ln(int argc,
       {
       case 's':
         sflag = 1;
-        break ;
-      case 'd':
-        dflag = 1;
         break ;
       case '?':
       default:
@@ -86,9 +81,7 @@ cmd_ln(int argc,
         }
     }
 
-  if (dflag)
-    ret = dpl_mkdent(ctx, src_path, dst_path);
-  else if (sflag)
+  if (sflag)
     ret = dpl_symlink(ctx, src_path, dst_path);
   else
     ret = dpl_link(ctx, src_path, dst_path);

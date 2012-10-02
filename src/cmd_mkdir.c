@@ -57,7 +57,7 @@ cmd_mkdir(int argc,
 
   path = argv[0];
 
-  ret = dpl_mkdir(ctx, path);
+  ret = dpl_mkdir(ctx, path, NULL, NULL);
   if (DPL_SUCCESS != ret)
     {
       fprintf(stderr, "status %s (%d)\n", dpl_status_str(ret), ret);
