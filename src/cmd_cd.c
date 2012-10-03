@@ -37,7 +37,7 @@ do_cd(char *path)
 
   cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-  snprintf(wd, sizeof (wd), "%s:%s%s", ctx->cur_bucket, ctx->delim, cur_fqn.path);
+  snprintf(wd, sizeof (wd), "%s:%c%s", ctx->cur_bucket, ctx->delimiter, cur_fqn.path);
 
   ret = dpl_chdir(ctx, path);
   if (DPL_SUCCESS != ret)

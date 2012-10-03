@@ -55,7 +55,7 @@ cmd_pwd(int argc,
 
   cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-  printf("%s:%s%s\n", ctx->cur_bucket, ctx->delim, cur_fqn.path);
+  printf("%s:%c%s\n", ctx->cur_bucket, ctx->delimiter, cur_fqn.path);
 
   var_set("status", "0", VAR_CMD_SET, NULL);
 

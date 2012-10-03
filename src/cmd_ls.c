@@ -89,7 +89,7 @@ ls_recurse(struct ls_data *ls_data,
 
           cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-          printf("%s%s%s:\n", 0 == level ? "" : "\n", ctx->delim, cur_fqn.path);
+          printf("%s%c%s:\n", 0 == level ? "" : "\n", ctx->delimiter, cur_fqn.path);
 
           ret = dpl_opendir(ctx, ".", &dir_hdl);
           if (DPL_SUCCESS != ret)
