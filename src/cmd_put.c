@@ -29,7 +29,7 @@ struct usage_def put_usage[] =
     {'m', USAGE_PARAM, "metadata", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'q', USAGE_PARAM, "query_params", "comma or semicolon separated list of variables e.g. var1=val1[;|,]var2=val2;..."},
     {'P', 0u, NULL, "do a post"},
-    {'O', 0u, NULL, "one shot put"},
+    {'O', 0u, NULL, "buffered"},
     {USAGE_NO_OPT, USAGE_MANDAT, "local_file", "local file"},
     {USAGE_NO_OPT, 0u, "path", "remote file"},
     {0, 0u, NULL, NULL},
@@ -60,7 +60,7 @@ cmd_put(int argc,
   int retries = 0;
   int Pflag = 0;
   dpl_vfile_flag_t flags = 0u;
-  int Oflag = 0;
+  int Oflag = 1;
   int Mflag = 0;
   dpl_sysmd_t sysmd;
 
@@ -108,7 +108,7 @@ cmd_put(int argc,
         Pflag = 1;
         break ;
       case 'O':
-        Oflag = 1;
+        Oflag = 0;
         break ;
       case '?':
       default:

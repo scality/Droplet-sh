@@ -23,7 +23,7 @@ struct usage_def get_usage[] =
     {'k', 0u, NULL, "encrypt file"},
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
-    {'O', 0u, NULL, "one shot get"},
+    {'O', 0u, NULL, "buffered"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
     {0, 0u, NULL, NULL},
@@ -94,7 +94,7 @@ cmd_get(int argc,
   int start_inited = 0;
   int end_inited = 0;
   int retries = 0;
-  int Oflag = 0;
+  int Oflag = 1;
   dpl_vfile_flag_t flags;
 
   memset(&get_data, 0, sizeof (get_data));
@@ -120,7 +120,7 @@ cmd_get(int argc,
         kflag = 1;
         break ;
       case 'O':
-        Oflag = 1;
+        Oflag = 0;
         break ;
       case '?':
       default:
