@@ -43,7 +43,7 @@ ls_recurse(struct ls_data *ls_data,
       int i;
 
       //raw listing
-      ret = dpl_list_bucket(ctx, ctx->cur_bucket, NULL, NULL, &objects, NULL);
+      ret = dpl_list_bucket(ctx, ctx->cur_bucket, NULL, NULL, -1, &objects, NULL);
       if (DPL_SUCCESS != ret)
         {
           fprintf(stderr, "listbucket failure %s (%d)\n", dpl_status_str(ret), ret);
