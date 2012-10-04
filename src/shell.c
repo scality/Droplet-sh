@@ -350,7 +350,7 @@ shell_do(struct cmd_def **defs)
 
       cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-      snprintf(prompt, sizeof (prompt), "%s:%c%s> ", ctx->cur_bucket, ctx->delimiter, cur_fqn.path);
+      snprintf(prompt, sizeof (prompt), "%s:/%s> ", ctx->cur_bucket, cur_fqn.path);
 
       if ((line = readline(prompt)))
         {
