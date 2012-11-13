@@ -15,6 +15,8 @@ dplsh_SOURCES = \
 	cmd_ls.c \
 	cmd_mb.c \
 	cmd_mkdir.c \
+	cmd_mkdent.c \
+	cmd_rmdent.c \
 	cmd_put.c \
 	cmd_pwd.c \
 	cmd_rb.c \
