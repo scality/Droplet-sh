@@ -19,6 +19,7 @@
 
 /* PROTO utils.c */
 /* ./utils.c */
+void list_object_types();
 int ask_for_confirmation(char *str);
 int write_all(int fd, char *buf, int len);
 int read_all(int fd, char *buf, int len);

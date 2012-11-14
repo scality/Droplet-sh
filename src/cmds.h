@@ -27,6 +27,7 @@ extern struct cmd_def rb_cmd;
 extern struct cmd_def getattr_cmd;
 extern struct cmd_def mb_cmd;
 extern struct cmd_def ls_cmd;
+extern struct cmd_def mknod_cmd;
 extern struct cmd_def mkdir_cmd;
 extern struct cmd_def pwd_cmd;
 extern struct cmd_def rmdir_cmd;
@@ -36,8 +37,11 @@ extern struct cmd_def unset_cmd;
 extern struct cmd_def genurl_cmd;
 extern struct cmd_def cp_cmd;
 extern struct cmd_def mv_cmd;
+extern struct cmd_def mvdent_cmd;
 extern struct cmd_def ln_cmd;
 extern struct cmd_def idof_cmd;
+extern struct cmd_def mkdent_cmd;
+extern struct cmd_def rmdent_cmd;
 
 extern struct cmd_def	*cmd_defs[];
 
