@@ -16,6 +16,16 @@
 
 #include "dplsh.h"
 
+void
+list_object_types()
+{
+  int i;
+
+  for (i = 1;i <= DPL_FTYPE_SYMLINK;i++)
+    printf("%s ", dpl_object_type_str(i));
+  printf("\n");
+}
+
 /**
  * ask for confirmation
  *
