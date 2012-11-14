@@ -6,6 +6,7 @@ dplsh_SOURCES = \
 	cmd_cd.c \
 	cmd_cp.c \
 	cmd_mv.c \
+	cmd_mvdent.c \
 	cmd_ln.c \
 	cmd_genurl.c \
 	cmd_getattr.c \
@@ -15,6 +16,7 @@ dplsh_SOURCES = \
 	cmd_ls.c \
 	cmd_mb.c \
 	cmd_mkdir.c \
+	cmd_mknod.c \
 	cmd_mkdent.c \
 	cmd_rmdent.c \
 	cmd_put.c \
