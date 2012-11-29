@@ -15,7 +15,7 @@ AC_HEADER_STDC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 
-PKG_CHECK_MODULES(LIBDROPLET, droplet-1.0)
+PKG_CHECK_MODULES(LIBDROPLET, droplet-3.0)
 AC_SEARCH_LIBS([rl_abort], [readline])
 if test x"$ac_cv_search_rl_abort" = x"no"; then
     # Try again linking ncurses this time to workaround a bug on CentOS 5.5
