@@ -56,7 +56,7 @@ cmd_put(int argc,
   ssize_t cc;
   struct stat st;
   int kflag = 0;
-  char *buf;
+  char *buf = NULL;
   int retries = 0;
   int Pflag = 0;
   dpl_vfile_flag_t flags = 0u;
@@ -191,7 +191,12 @@ cmd_put(int argc,
   if (Oflag)
     block_size = st.st_size;
 
-  buf = alloca(block_size);
+  buf = malloc(block_size);
+  if (NULL == buf)
+    {
+      perror("malloc");
+      return SHELL_CONT;
+    }
 
   flags = DPL_VFILE_FLAG_CREAT;
   if (kflag)
@@ -271,6 +276,9 @@ cmd_put(int argc,
 
   if (-1 != fd)
     close(fd);
+
+  if (NULL != buf)
+    free(buf);
 
   if (NULL != metadata)
     dpl_dict_free(metadata);
