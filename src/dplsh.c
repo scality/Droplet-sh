@@ -14,12 +14,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <signal.h>
+
 #include "dplsh.h"
 
 dpl_ctx_t *ctx = NULL;
 int status = 0;
 u_int block_size = 0;
 int hash = 0;
+
+static void
+sig_handler(int signo)
+{
+  /* simply ignore this signal to avoid premature exit
+   * when typing ^C in the shell */
+}
 
 int
 do_quit()
@@ -129,6 +138,8 @@ main(int argc,
       usage_help(&main_cmd);
       exit(1);
     }
+
+  signal(SIGINT, sig_handler);
 
   ctx = dpl_ctx_new(droplet_dir, profile_name);
   if (NULL == ctx)
