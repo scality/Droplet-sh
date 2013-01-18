@@ -23,11 +23,24 @@ int status = 0;
 u_int block_size = 0;
 int hash = 0;
 
+volatile sig_atomic_t flag = 0;
+
 static void
 sig_handler(int signo)
 {
   /* simply ignore this signal to avoid premature exit
    * when typing ^C in the shell */
+  flag = 1;
+}
+
+static int
+event_hook(void)
+{
+  if (flag)
+    {
+      rl_done = 1;
+      flag = 0;
+    }
 }
 
 int
@@ -173,6 +186,7 @@ main(int argc,
   shell_install_cmd_defs(cmd_defs);
   rl_attempted_completion_function = shell_completion;
   rl_completion_entry_function = file_completion;
+  rl_event_hook = event_hook;
 
   shell_do(cmd_defs);
 

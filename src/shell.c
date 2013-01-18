@@ -344,7 +344,7 @@ shell_do(struct cmd_def **defs)
 
   while (1)
     {
-      char *line;
+      char *line = NULL;
       char prompt[256];
       dpl_fqn_t cur_fqn;
 
