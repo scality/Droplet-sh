@@ -38,6 +38,7 @@ event_hook(void)
 {
   if (flag)
     {
+      rl_initialize();
       rl_done = 1;
       flag = 0;
     }
