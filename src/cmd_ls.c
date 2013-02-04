@@ -96,13 +96,6 @@ ls_recurse(struct ls_data *ls_data,
       if (DPL_FTYPE_DIR != sysmd.ftype ||
           ls_data->dflag) /* -d supersedes -R */
         {
-          char *name = NULL;
-
-          if (ls_data->dflag)
-            name = path;
-          else
-            name = entry.name;
-
           if (ls_data->lflag)
             {
               stm = localtime(&sysmd.mtime);
@@ -113,11 +106,11 @@ ls_recurse(struct ls_data *ls_data,
                      stm->tm_mday,
                      stm->tm_hour,
                      stm->tm_min,
-                     name);
+                     path);
             }
           else
             {
-              printf("%s\n", entry.name);
+              printf("%s\n", path);
             }
         }
       else
