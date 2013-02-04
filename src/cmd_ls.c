@@ -89,7 +89,7 @@ ls_recurse(struct ls_data *ls_data,
       ret = dpl_getattr(ctx, path, NULL, &sysmd);
       if (DPL_SUCCESS != ret)
         {
-          printf("getattr(%s): %s (%d)\n", path, dpl_status_str(ret), ret);
+          printf("dpl_getattr(%s): %s (%d)\n", path, dpl_status_str(ret), ret);
           return ret;
         }
 
@@ -156,10 +156,12 @@ ls_recurse(struct ls_data *ls_data,
                         }
                       else
                         {
-                          ret = dpl_getattr(ctx, entry.name, NULL, &sysmd);
+                          char entrypath[1024];
+                          (void) sprintf(entrypath, "%s/%s", path, entry.name);
+                          ret = dpl_getattr(ctx, entrypath, NULL, &sysmd);
                           if (DPL_SUCCESS != ret)
                             fprintf(stderr,
-                                    "stat: %s failed: %s (%d)\n",
+                                    "dpl_getattr(%s) failed: %s (%d)\n",
                                     entry.name, dpl_status_str(ret), ret);
                         }
 
