@@ -258,6 +258,15 @@ cmd_ls(int argc,
   ls_data.Xflag = Xflag;
   ls_data.dflag = dflag;
 
+  if (! strcmp("s3", (char *) dpl_get_backend_name(ctx)))
+    {
+      if (! ctx->cur_bucket || ! strcmp(ctx->cur_bucket, ""))
+        {
+          fprintf(stderr, "You need to set a bucket to use 'ls', or use 'la' to list the buckets\n");
+          goto end;
+        }
+    }
+
   if (0 == argc)
     {
       ret = ls_recurse(&ls_data, ".", 0);
