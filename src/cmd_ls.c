@@ -21,6 +21,7 @@ int cmd_ls(int argc, char **argv);
 struct usage_def ls_usage[] =
   {
     {'l', 0u, NULL, "long display"},
+    {'d', 0u, NULL, "getattr on directory"},
     {'a', 0u, NULL, "ignored for now"},
     {'R', 0u, NULL, "recurse subdirectories"},
     {'A', 0u, NULL, "list all files in the bucket (do not use vdir interface)"},
@@ -32,7 +33,7 @@ struct cmd_def ls_cmd = {"ls", "list directory", ls_usage, cmd_ls};
 
 dpl_status_t
 ls_recurse(struct ls_data *ls_data,
-           char *dir,
+           char *path,
            int level)
 {
   int ret;
@@ -80,84 +81,131 @@ ls_recurse(struct ls_data *ls_data,
       void *dir_hdl;
       dpl_dirent_t entry;
       dpl_fqn_t cur_fqn;
+      struct tm *stm = NULL;
+      dpl_sysmd_t sysmd;
 
-      if (1 == ls_data->Rflag)
+      memset(&sysmd, 0, sizeof sysmd);
+
+      ret = dpl_getattr(ctx, path, NULL, &sysmd);
+      if (DPL_SUCCESS != ret)
         {
-          ret = dpl_chdir(ctx, dir);
-          if (DPL_SUCCESS != ret)
-            return ret;
+          printf("getattr(%s): %s (%d)\n", path, dpl_status_str(ret), ret);
+          return ret;
+        }
 
-          cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
+      if (DPL_FTYPE_DIR != sysmd.ftype ||
+          ls_data->dflag) /* -d supersedes -R */
+        {
+          char *name = NULL;
 
-          printf("%s/%s:\n", 0 == level ? "" : "\n", cur_fqn.path);
+          if (ls_data->dflag)
+            name = path;
+          else
+            name = entry.name;
 
-          ret = dpl_opendir(ctx, ".", &dir_hdl);
-          if (DPL_SUCCESS != ret)
-            return ret;
+          if (ls_data->lflag)
+            {
+              stm = localtime(&sysmd.mtime);
+              printf("%12llu %04d-%02d-%02d %02d:%02d %s\n",
+                     (unsigned long long) sysmd.size,
+                     1900 + stm->tm_year,
+                     1 + stm->tm_mon,
+                     stm->tm_mday,
+                     stm->tm_hour,
+                     stm->tm_min,
+                     name);
+            }
+          else
+            {
+              printf("%s\n", entry.name);
+            }
         }
       else
         {
-          ret = dpl_opendir(ctx, dir, &dir_hdl);
-          if (DPL_SUCCESS != ret)
-            return ret;
-        }
-
-      while (!dpl_eof(dir_hdl))
-        {
-          ret = dpl_readdir(dir_hdl, &entry);
-          if (DPL_SUCCESS != ret)
-            return ret;
-
-          if (0 == ls_data->pflag)
+          if (1 == ls_data->Rflag)
             {
-              if (ls_data->lflag)
-                {
-                  struct tm *stm;
-                  dpl_sysmd_t sysmd;
+              ret = dpl_chdir(ctx, path);
+              if (DPL_SUCCESS != ret)
+                return ret;
 
-                  memset(&sysmd, 0, sizeof (sysmd));
+              cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-                  if (!strcmp((char *) dpl_get_backend_name(ctx), "s3"))
-                    {
-                      //optim for S3
-                      sysmd.mtime = entry.last_modified;
-                      sysmd.size = entry.size;
-                    }
-                  else
-                    {
-                      ret = dpl_getattr(ctx, entry.name, NULL, &sysmd);
-                      if (DPL_SUCCESS != ret)
-                        fprintf(stderr, "stat: %s failed: %s (%d)\n", entry.name, dpl_status_str(ret), ret);
-                    }
+              printf("%s/%s:\n", 0 == level ? "" : "\n", cur_fqn.path);
 
-                  stm = localtime(&sysmd.mtime);
-                  printf("%12llu %04d-%02d-%02d %02d:%02d %s\n", (unsigned long long) sysmd.size, 1900 + stm->tm_year, 1 + stm->tm_mon, stm->tm_mday, stm->tm_hour, stm->tm_min, entry.name);
-                }
-              else
-                {
-                  printf("%s\n", entry.name);
-                }
-            }
-
-          ls_data->total_size += entry.size;
-
-          if (1 == ls_data->Rflag &&
-              strcmp(entry.name, ".") &&
-              (DPL_FTYPE_DIR == entry.type))
-            {
-              ret = ls_recurse(ls_data, entry.name, level + 1);
+              ret = dpl_opendir(ctx, ".", &dir_hdl);
               if (DPL_SUCCESS != ret)
                 return ret;
             }
-        }
+          else
+            {
+              ret = dpl_opendir(ctx, path, &dir_hdl);
+              if (DPL_SUCCESS != ret)
+                return ret;
+            }
 
-      dpl_closedir(dir_hdl);
+          while (!dpl_eof(dir_hdl))
+            {
+              ret = dpl_readdir(dir_hdl, &entry);
+              if (DPL_SUCCESS != ret)
+                return ret;
 
-      if (1 == ls_data->Rflag && level > 0)
-        {
-          ret = dpl_chdir(ctx, "..");
-          if (DPL_SUCCESS != ret)
-            return ret;
+              if (0 == ls_data->pflag)
+                {
+                  if (ls_data->lflag)
+                    {
+                      memset(&sysmd, 0, sizeof (sysmd));
+
+                      if (!strcmp((char *) dpl_get_backend_name(ctx), "s3"))
+                        {
+                          //optim for S3
+                          sysmd.mtime = entry.last_modified;
+                          sysmd.size = entry.size;
+                        }
+                      else
+                        {
+                          ret = dpl_getattr(ctx, entry.name, NULL, &sysmd);
+                          if (DPL_SUCCESS != ret)
+                            fprintf(stderr,
+                                    "stat: %s failed: %s (%d)\n",
+                                    entry.name, dpl_status_str(ret), ret);
+                        }
+
+                      stm = localtime(&sysmd.mtime);
+                      printf("%12llu %04d-%02d-%02d %02d:%02d %s\n",
+                             (unsigned long long) sysmd.size,
+                             1900 + stm->tm_year,
+                             1 + stm->tm_mon,
+                             stm->tm_mday,
+                             stm->tm_hour,
+                             stm->tm_min,
+                             entry.name);
+                    }
+                  else
+                    {
+                      printf("%s\n", entry.name);
+                    }
+                }
+
+              ls_data->total_size += entry.size;
+
+              if (1 == ls_data->Rflag &&
+                  strcmp(entry.name, ".") &&
+                  (DPL_FTYPE_DIR == entry.type))
+                {
+                  ret = ls_recurse(ls_data, entry.name, level + 1);
+                  if (DPL_SUCCESS != ret)
+                    return ret;
+                }
+            }
+
+          dpl_closedir(dir_hdl);
+
+          if (1 == ls_data->Rflag && level > 0)
+            {
+              ret = dpl_chdir(ctx, "..");
+              if (DPL_SUCCESS != ret)
+                return ret;
+            }
         }
     }
 
@@ -173,6 +221,7 @@ cmd_ls(int argc,
   int lflag = 0;
   int Xflag = 0;
   int Rflag = 0;
+  int dflag = 0;
   size_t total_size = 0;
   char *path;
   struct ls_data ls_data;
@@ -184,6 +233,9 @@ cmd_ls(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(ls_usage))) != -1)
     switch (opt)
       {
+      case 'd':
+        dflag = 1;
+        break;
       case 'R':
         Rflag = 1;
         break ;
@@ -218,6 +270,7 @@ cmd_ls(int argc,
   ls_data.lflag = lflag;
   ls_data.Rflag = Rflag;
   ls_data.Xflag = Xflag;
+  ls_data.dflag = dflag;
 
   ret = ls_recurse(&ls_data, path, 0);
   if (DPL_SUCCESS != ret)

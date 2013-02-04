@@ -56,6 +56,7 @@ struct ls_data
   int Rflag; //recursive (vdir)
   int Xflag; //list all (raw)
   int pflag; //do not print
+  int dflag; //getattr on directory?
   size_t total_size;
 };
 
