@@ -83,6 +83,7 @@ ls_recurse(struct ls_data *ls_data,
       dpl_fqn_t cur_fqn;
       struct tm *stm = NULL;
       dpl_sysmd_t sysmd;
+      dpl_fqn_t backup_fqn;
 
       memset(&sysmd, 0, sizeof sysmd);
 
@@ -117,6 +118,7 @@ ls_recurse(struct ls_data *ls_data,
         {
           if (1 == ls_data->Rflag)
             {
+              backup_fqn = dpl_cwd(ctx, ctx->cur_bucket);
               ret = dpl_chdir(ctx, path);
               if (DPL_SUCCESS != ret)
                 return ret;
@@ -156,9 +158,7 @@ ls_recurse(struct ls_data *ls_data,
                         }
                       else
                         {
-                          char entrypath[1024];
-                          (void) sprintf(entrypath, "%s/%s", path, entry.name);
-                          ret = dpl_getattr(ctx, entrypath, NULL, &sysmd);
+                          ret = dpl_getattr(ctx, entry.name, NULL, &sysmd);
                           if (DPL_SUCCESS != ret)
                             fprintf(stderr,
                                     "dpl_getattr(%s) failed: %s (%d)\n",
@@ -195,9 +195,18 @@ ls_recurse(struct ls_data *ls_data,
 
           dpl_closedir(dir_hdl);
 
-          if (1 == ls_data->Rflag && level > 0)
+          while (1 == ls_data->Rflag && level >= 0)
             {
               ret = dpl_chdir(ctx, "..");
+              if (DPL_SUCCESS != ret)
+                return ret;
+
+              level--;
+            }
+
+          if (ls_data->Rflag)
+            {
+              ret = dpl_chdir(ctx, backup_fqn.path);
               if (DPL_SUCCESS != ret)
                 return ret;
             }
