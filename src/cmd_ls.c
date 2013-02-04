@@ -260,10 +260,45 @@ cmd_ls(int argc,
 
   if (! strcmp("s3", (char *) dpl_get_backend_name(ctx)))
     {
-      if (! ctx->cur_bucket || ! strcmp(ctx->cur_bucket, ""))
+      /* we can do 'ls bucket:/path' or 'ls bucket:', even if no bucket is set */
+      if (argv[0])
         {
-          fprintf(stderr, "You need to set a bucket to use 'ls', or use 'la' to list the buckets\n");
-          goto end;
+          char *p = strchr(argv[0], ':');
+          dpl_vec_t *buckets = NULL;
+          int i;
+          int found = 0;
+
+          if (! p)
+            goto no_bucket;
+
+          *p = 0;
+
+          ret = dpl_list_all_my_buckets(ctx, &buckets);
+          if (DPL_SUCCESS != ret)
+            goto no_bucket;
+
+          for (i = 0; i < buckets->n_items && 0 == found; i++)
+            {
+              dpl_value_t *item = dpl_vec_get(buckets, i);
+
+              if (! strcmp(argv[0], (char *) item->string))
+                  found = 1;
+            }
+
+          *p = ':';
+
+          if (0 == found)
+            goto no_bucket;
+        }
+      else
+        {
+        no_bucket:
+          if (! ctx->cur_bucket || ! strcmp(ctx->cur_bucket, ""))
+            {
+              fprintf(stderr, "You need to set a bucket to use 'ls', "
+                      "or use 'la' to list the buckets\n");
+              goto end;
+            }
         }
     }
 
