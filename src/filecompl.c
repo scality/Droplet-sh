@@ -26,7 +26,11 @@
 extern int _rl_match_hidden_files;
 
 #define HIDDEN_FILE(file) 0
+#if defined (HAVE_READLINE)
 extern int rl_complete_with_tilde_expansion;
+#else
+int rl_complete_with_tilde_expansion;
+#endif
 
 void *
 do_opendir(char *path)
@@ -142,6 +146,7 @@ file_completion(const char *text,
 	  dirname = temp;
 	}
 
+#if defined (HAVE_READLINE)
       if (rl_directory_rewrite_hook)
 	(*rl_directory_rewrite_hook) (&dirname);
 
@@ -159,9 +164,11 @@ file_completion(const char *text,
 	  free (users_dirname);
 	  users_dirname = temp;
 	}
+#endif /* HAVE_READLINE */
 
       directory = do_opendir (dirname);
 
+#if defined (HAVE_READLINE)
       /* Now dequote a non-null filename. */
       if (filename && *filename && rl_completion_found_quote && rl_filename_dequoting_function)
 	{
@@ -170,6 +177,8 @@ file_completion(const char *text,
 	  free (filename);
 	  filename = temp;
 	}
+#endif /* HAVE_READLINE */
+
       filename_len = strlen (filename);
 
       rl_filename_completion_desired = 1;
@@ -286,7 +295,10 @@ file_completion(const char *text,
           DPRINTF("return temp='%s'\n", temp);
         }
 
+#if defined (HAVE_READLINE)
       rl_completion_suppress_append = 1;
+#endif /* HAVE_READLINE */
+
       return (temp);
     }
 }

@@ -38,8 +38,10 @@ event_hook(void)
 {
   if (flag)
     {
+#if defined (HAVE_READLINE)
       rl_initialize();
       rl_done = 1;
+#endif /* HAVE_READLINE */
       flag = 0;
     }
 }
@@ -186,8 +188,20 @@ main(int argc,
 
   shell_install_cmd_defs(cmd_defs);
   rl_attempted_completion_function = shell_completion;
-  rl_completion_entry_function = file_completion;
+
+  /* XXX there is a bug in libedit headers
+   *
+   * the callback should have the following prototype, accoding the the
+   * libreadline headers:
+   *  - int (*) (const char *, int)
+   * but have this one:
+   *  - char * (*) (const char *, int)
+   */
+  rl_completion_entry_function = (int (*) (const char *, int)) file_completion;
+
+#if defined (HAVE_READLINE)
   rl_event_hook = event_hook;
+#endif /* HAVE_READLINE */
 
   shell_do(cmd_defs);
 

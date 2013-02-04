@@ -30,8 +30,12 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#if defined (HAVE_READLINE)
 #include <readline/readline.h>
 #include <readline/history.h>
+#else
+#include <editline/readline.h>
+#endif /* HAVE_READLINE */
 #include <droplet.h>
 #include <droplet/vfs.h>
 #include "xfuncs.h"
