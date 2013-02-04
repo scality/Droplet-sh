@@ -30,8 +30,12 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#if defined (HAVE_READLINE)
 #include <readline/readline.h>
 #include <readline/history.h>
+#else
+#include <editline/readline.h>
+#endif /* HAVE_READLINE */
 #include <droplet.h>
 #include <droplet/vfs.h>
 #include "xfuncs.h"
@@ -52,6 +56,7 @@ struct ls_data
   int Rflag; //recursive (vdir)
   int Xflag; //list all (raw)
   int pflag; //do not print
+  int dflag; //getattr on directory?
   size_t total_size;
 };
 
