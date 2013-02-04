@@ -139,7 +139,8 @@ cmd_rm(int argc,
   if (rflag)
     {
       ret = recurse(ctx, path, verbose, 0);
-      if (DPL_SUCCESS != ret)
+      if (DPL_SUCCESS != ret &&
+          (0 == fflag || (DPL_ENOENT != ret && 1 == fflag)))
         {
           fprintf(stderr, "error recursing: %s (%d)\n", dpl_status_str(ret), ret);
           ret = 1;
@@ -147,7 +148,8 @@ cmd_rm(int argc,
         }
 
       ret = dpl_rmdir(ctx, path);
-      if (DPL_SUCCESS != ret)
+      if (DPL_SUCCESS != ret &&
+          (0 == fflag || (DPL_ENOENT != ret && 1 == fflag)))
         {
           fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
           goto end;
@@ -156,7 +158,8 @@ cmd_rm(int argc,
   else
     {
       ret = dpl_unlink(ctx, path);
-      if (DPL_SUCCESS != ret)
+      if (DPL_SUCCESS != ret &&
+          (0 == fflag || (DPL_ENOENT != ret && 1 == fflag)))
         {
           fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
           goto end;
