@@ -218,6 +218,7 @@ cmd_ls(int argc,
   size_t total_size = 0;
   char *path;
   struct ls_data ls_data;
+  int i;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -248,16 +249,6 @@ cmd_ls(int argc,
   argc -= optind;
   argv += optind;
 
-  if (0 == argc)
-    path = ".";
-  else if (1 == argc)
-    path = argv[0];
-  else
-    {
-      usage_help(&ls_cmd);
-      return SHELL_CONT;
-    }
-
   memset(&ls_data, 0, sizeof (ls_data));
   ls_data.ctx = ctx;
   ls_data.lflag = lflag;
@@ -265,11 +256,26 @@ cmd_ls(int argc,
   ls_data.Xflag = Xflag;
   ls_data.dflag = dflag;
 
-  ret = ls_recurse(&ls_data, path, 0);
-  if (DPL_SUCCESS != ret)
+  if (0 == argc)
     {
-      fprintf(stderr, "ls failure %s (%d)\n", dpl_status_str(ret), ret);
-      goto end;
+      ret = ls_recurse(&ls_data, ".", 0);
+      if (DPL_SUCCESS != ret)
+        {
+          fprintf(stderr, "ls failure %s (%d)\n", dpl_status_str(ret), ret);
+          goto end;
+        }
+    }
+  else
+    {
+      for (i = 0; i < argc; i++)
+        {
+          ret = ls_recurse(&ls_data, argv[i], 0);
+          if (DPL_SUCCESS != ret)
+            {
+              fprintf(stderr, "ls failure %s (%d)\n", dpl_status_str(ret), ret);
+              goto end;
+            }
+        }
     }
 
   total_size = ls_data.total_size;
