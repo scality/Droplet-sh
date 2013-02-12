@@ -158,11 +158,22 @@ ls_recurse(struct ls_data *ls_data,
                         }
                       else
                         {
-                          ret = dpl_getattr(ctx, entry.name, NULL, &sysmd);
+                          char p[256];
+
+                          if (! ls_data->Rflag)
+                            {
+                              snprintf(p, sizeof p, "%s/%s", path, entry.name);
+                            }
+                          else
+                            {
+                              snprintf(p, sizeof p, "%s", entry.name);
+                            }
+
+                          ret = dpl_getattr(ctx, p, NULL, &sysmd);
                           if (DPL_SUCCESS != ret)
                             fprintf(stderr,
                                     "dpl_getattr(%s) failed: %s (%d)\n",
-                                    entry.name, dpl_status_str(ret), ret);
+                                    p, dpl_status_str(ret), ret);
                         }
 
                       stm = localtime(&sysmd.mtime);
