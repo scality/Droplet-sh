@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include "dplsh.h"
 
+#include "libgen.h"
+
 int cmd_put(int argc, char **argv);
 
 struct usage_def put_usage[] =
@@ -39,7 +41,7 @@ struct cmd_def put_cmd = {"put", "put file", put_usage, cmd_put};
 
 int
 cmd_put(int argc,
-           char **argv)
+        char **argv)
 {
   int ret;
   char opt;
@@ -166,6 +168,26 @@ cmd_put(int argc,
       return SHELL_CONT;
     }
 
+  /* ok, now if remote_file = <whatever>/. or . or .., or ...
+   * just substitute with the correct destination path */
+  char tmp_path[1024] = "";
+
+  /* check if the destination is an existing dir; if so,
+   * append the local file name to the remote directory one */
+  memset(&sysmd, 0, sizeof sysmd);
+  ret = dpl_getattr(ctx, remote_file, NULL, &sysmd);
+  if (DPL_SUCCESS == ret)
+    {
+      if (sysmd.mask & DPL_SYSMD_MASK_FTYPE &&
+          (DPL_FTYPE_DIR == sysmd.ftype ||
+           DPL_FTYPE_SYMLINK == sysmd.ftype))
+        {
+          snprintf(tmp_path, sizeof tmp_path, "%s/%s",
+                   remote_file, basename(local_file));
+          remote_file = &tmp_path[0];
+        }
+    }
+
   memset(&sysmd, 0, sizeof (sysmd));
 
   if (DPL_CANNED_ACL_UNDEF != canned_acl)
@@ -226,13 +248,13 @@ cmd_put(int argc,
     }
 
   retries++;
-      
+
   ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, NULL, metadata, &sysmd, st.st_size, query_params, &vfile);
   if (DPL_SUCCESS != ret)
     {
       goto retry;
     }
-  
+
   while (1)
     {
       cc = read(fd, buf, block_size);
