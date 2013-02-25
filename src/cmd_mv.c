@@ -35,6 +35,7 @@ cmd_mv(int argc,
   char opt;
   char *src_path = NULL;
   char *dst_path = NULL;
+  dpl_sysmd_t sysmd;
 
   var_set("status", "1", VAR_CMD_SET, NULL);
 
@@ -76,10 +77,19 @@ cmd_mv(int argc,
         }
     }
 
-  ret = dpl_rename(ctx, src_path, dst_path);
+  ret = dpl_getattr(ctx, src_path, NULL, &sysmd);
   if (DPL_SUCCESS != ret)
     {
-      fprintf(stderr, "status: %s (%d)\n", dpl_status_str(ret), ret);
+      fprintf(stderr, "dpl_getattr status: %s (%d)\n",
+              dpl_status_str(ret), ret);
+      goto end;
+    }
+
+  ret = dpl_rename(ctx, src_path, dst_path, sysmd.ftype);
+  if (DPL_SUCCESS != ret)
+    {
+      fprintf(stderr, "dpl_rename status: %s (%d)\n",
+              dpl_status_str(ret), ret);
       goto end;
     }
 
