@@ -20,6 +20,7 @@ int cmd_get(int argc, char **argv);
 
 struct usage_def get_usage[] =
   {
+    {'f', 0u, NULL, "ignore local file"},
     {'k', 0u, NULL, "encrypt file"},
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
@@ -96,6 +97,7 @@ cmd_get(int argc,
   int retries = 0;
   int Oflag = 1;
   dpl_vfile_flag_t flags;
+  int ignore_local_file = 0;
 
   memset(&get_data, 0, sizeof (get_data));
   get_data.fd = -1;
@@ -108,6 +110,9 @@ cmd_get(int argc,
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(get_usage))) != -1)
     switch (opt)
       {
+      case 'f':
+        ignore_local_file = 1;
+        break;
       case 's':
         range.start = strtol(optarg, NULL, 0);
         start_inited = 1;
@@ -177,8 +182,11 @@ cmd_get(int argc,
       ret = access(local_file, F_OK);
       if (0 == ret)
         {
-          if (1 == ask_for_confirmation("file already exists, overwrite?"))
-            return SHELL_CONT;
+          if (0 == ignore_local_file)
+            {
+              if (1 == ask_for_confirmation("file already exists, overwrite?"))
+                return SHELL_CONT;
+            }
         }
 
       get_data.fd = open(local_file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
