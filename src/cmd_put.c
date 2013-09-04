@@ -228,7 +228,7 @@ cmd_put(int argc,
   if (Pflag)
     flags |= DPL_VFILE_FLAG_POST;
   if (Oflag)
-    flags |= DPL_VFILE_FLAG_ONESHOT;
+    flags |= DPL_VFILE_FLAG_BLOB;
 
  retry:
 
@@ -249,12 +249,22 @@ cmd_put(int argc,
 
   retries++;
 
-  ret = dpl_openwrite(ctx, remote_file, DPL_FTYPE_REG, flags, NULL, metadata, &sysmd, st.st_size, query_params, &vfile);
+  ret = dpl_openwrite(ctx,
+                      remote_file,
+                      DPL_FTYPE_REG,
+                      flags,
+                      NULL,
+                      metadata,
+                      &sysmd,
+                      st.st_size,
+                      query_params,
+                      &vfile);
   if (DPL_SUCCESS != ret)
     {
       goto retry;
     }
 
+  long long offset = 0;
   while (1)
     {
       cc = read(fd, buf, block_size);
@@ -263,33 +273,35 @@ cmd_put(int argc,
           perror("read");
           goto end;
         }
-      
+
       if (0 == cc)
         {
           break ;
         }
-      
-      ret = dpl_write(vfile, buf, cc);
+
+      ret = dpl_pwrite(vfile, buf, cc, offset, NULL, NULL);
       if (DPL_SUCCESS != ret)
         {
           fprintf(stderr, "write failed\n");
           goto retry;
         }
-      
+
+      offset += cc;
+
       if (1 == hash)
         {
           fprintf(stderr, "#");
           fflush(stderr);
         }
     }
-  
+
   ret = dpl_close(vfile);
   if (DPL_SUCCESS != ret)
     {
       //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
       goto retry;
     }
-  
+
   vfile = NULL;
 
   var_set("status", "0", VAR_CMD_SET, NULL);
@@ -299,16 +311,15 @@ cmd_put(int argc,
   if (-1 != fd)
     close(fd);
 
-  if (NULL != buf)
-    free(buf);
+  free(buf);
 
-  if (NULL != metadata)
+  if (metadata)
     dpl_dict_free(metadata);
 
-  if (NULL != query_params)
+  if (query_params)
     dpl_dict_free(query_params);
 
-  if (NULL != vfile)
+  if (vfile)
     dpl_close(vfile);
 
   return SHELL_CONT;
