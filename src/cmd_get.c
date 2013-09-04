@@ -201,7 +201,7 @@ cmd_get(int argc,
   if (kflag)
     flags |= DPL_VFILE_FLAG_ENCRYPT;
   if (Oflag)
-    flags |= DPL_VFILE_FLAG_ONESHOT;
+    flags |= DPL_VFILE_FLAG_BLOB;
   if (start_inited || end_inited)
     flags |= DPL_VFILE_FLAG_RANGE;
 
