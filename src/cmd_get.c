@@ -21,64 +21,15 @@ int cmd_get(int argc, char **argv);
 struct usage_def get_usage[] =
   {
     {'f', 0u, NULL, "ignore local file"},
-    {'k', 0u, NULL, "encrypt file"},
     {'s', USAGE_PARAM, "start", "range start offset"},
     {'e', USAGE_PARAM, "end", "range end offset"},
-    {'O', 0u, NULL, "buffered"},
+    {'O', 0u, NULL, "blob mode"},
     {USAGE_NO_OPT, USAGE_MANDAT, "path", "remote file"},
     {USAGE_NO_OPT, 0u, "local_file or - or |cmd", "local file"},
     {0, 0u, NULL, NULL},
   };
 
 struct cmd_def get_cmd = {"get", "get file", get_usage, cmd_get};
-
-struct get_data
-{
-  int fd;
-  FILE *pipe;
-};
-
-static dpl_status_t
-cb_get_buffered(void *cb_arg,
-                char *buf,
-                u_int len)
-{
-  struct get_data *get_data = (struct get_data *) cb_arg;
-  int ret;
-
-  if (NULL != get_data->pipe)
-    {
-      size_t s;
-
-      s = fwrite(buf, 1, len, get_data->pipe);
-      if (s != len)
-        {
-          perror("fwrite");
-          return DPL_FAILURE;
-        }
-    }
-  else
-    {
-      if (1 == hash)
-        {
-          fprintf(stderr, "#");
-          fflush(stderr);
-        }
-
-      ret = write_all(get_data->fd, buf, len);
-      if (0 != ret)
-        {
-          ret = DPL_FAILURE;
-          goto end;
-        }
-    }
-
-  ret = DPL_SUCCESS;
-
- end:
-
-  return ret;
-}
 
 int
 cmd_get(int argc,
@@ -87,21 +38,22 @@ cmd_get(int argc,
   int ret;
   char opt;
   char *path = NULL;
-  struct get_data get_data;
   int do_stdout = 0;
-  int kflag = 0;
   char *local_file = NULL;
   dpl_range_t range;
   int start_inited = 0;
   int end_inited = 0;
   int retries = 0;
-  int Oflag = 1;
+  int Oflag = 0;
+  dpl_vfile_t *vfile = NULL;
   dpl_vfile_flag_t flags;
   int ignore_local_file = 0;
-
-  memset(&get_data, 0, sizeof (get_data));
-  get_data.fd = -1;
-
+  int fd = -1;
+  FILE *pipe = NULL;
+  char *buf = NULL;
+  int len;
+  off_t offset = 0;
+	  
   var_set("status", "1", VAR_CMD_SET, NULL);
 
   optind = 0;
@@ -121,11 +73,8 @@ cmd_get(int argc,
         range.end = strtol(optarg, NULL, 0);
         end_inited = 1;
         break ;
-      case 'k':
-        kflag = 1;
-        break ;
       case 'O':
-        Oflag = 0;
+        Oflag = 1;
         break ;
       case '?':
       default:
@@ -163,15 +112,15 @@ cmd_get(int argc,
 
   if (!strcmp(local_file, "-"))
     {
-      get_data.fd = 1;
+      fd = 1;
       do_stdout = 1;
     }
   else if ('|' == local_file[0])
     {
-      get_data.fd = 1;
+      fd = 1;
       do_stdout = 1;
-      get_data.pipe = popen(local_file + 1, "w");
-      if (NULL == get_data.pipe)
+      pipe = popen(local_file + 1, "w");
+      if (NULL == pipe)
         {
           fprintf(stderr, "pipe failed\n");
           goto end;
@@ -189,21 +138,37 @@ cmd_get(int argc,
             }
         }
 
-      get_data.fd = open(local_file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
-      if (-1 == get_data.fd)
+      fd = open(local_file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
+      if (-1 == fd)
         {
           perror("open");
           goto end;
         }
     }
 
-  flags = 0u;
-  if (kflag)
-    flags |= DPL_VFILE_FLAG_ENCRYPT;
   if (Oflag)
-    flags |= DPL_VFILE_FLAG_BLOB;
-  if (start_inited || end_inited)
-    flags |= DPL_VFILE_FLAG_RANGE;
+    {
+    }
+  else
+    {
+      flags = 0u;
+
+      ret = dpl_open(ctx,
+		     path,
+		     flags,
+		     NULL,
+		     NULL,
+		     NULL,
+		     NULL,
+		     NULL,
+		     &vfile);
+      if (DPL_SUCCESS != ret)
+	{
+	  goto retry;
+	}
+
+      offset = 0;
+    }
 
  retry:
 
@@ -224,16 +189,108 @@ cmd_get(int argc,
 
   retries++;
 
-  ret = dpl_openread(ctx, path, flags, NULL, &range, cb_get_buffered, &get_data, NULL, NULL);
-  if (DPL_SUCCESS != ret)
+  if (Oflag)
     {
-      if (DPL_ENOENT == ret)
-        {
-          fprintf(stderr, "no such object\n");
-          goto end;
-        }
-      goto retry;
+      ret = dpl_fget(ctx,
+		     path,
+		     NULL,
+		     NULL, 
+		     (start_inited || end_inited) ? &range : NULL,
+		     &buf,
+		     &len,
+		     NULL,
+		     NULL);
+      if (DPL_SUCCESS != ret)
+	{
+	  if (DPL_ENOENT == ret)
+	    {
+	      fprintf(stderr, "no such object\n");
+	      goto end;
+	    }
+	  goto retry;
+	}
+
+      if (NULL != pipe)
+	{
+	  size_t s;
+
+	  s = fwrite(buf, 1, len, pipe);
+	  if (s != len)
+	    {
+	      perror("fwrite");
+	      return SHELL_CONT;
+	    }
+	}
+      else
+	{
+	  if (1 == hash)
+	    {
+	      fprintf(stderr, "#");
+	      fflush(stderr);
+	    }
+
+	  ret = write_all(fd, buf, len);
+	  if (0 != ret)
+	    {
+	      return SHELL_CONT;
+	    }
+	}
     }
+  else
+    {
+      while (1)
+	{
+	  int cc;
+
+	  ret = dpl_pread(vfile, block_size, offset, &buf, &len);
+	  if (DPL_SUCCESS != ret)
+	    {
+	      if (DPL_ENOENT == ret)
+		break ;
+
+	      fprintf(stderr, "pread failed %s (%d)\n", dpl_status_str(ret), ret);
+	      goto retry;
+	    }
+
+	  if (NULL != pipe)
+	    {
+	      size_t s;
+	      
+	      s = fwrite(buf, 1, len, pipe);
+	      if (s != len)
+		{
+		  perror("fwrite");
+		  return SHELL_CONT;
+		}
+	    }
+	  else
+	    {
+	      if (1 == hash)
+		{
+		  fprintf(stderr, "#");
+		  fflush(stderr);
+		}
+	      
+	      ret = write_all(fd, buf, len);
+	      if (0 != ret)
+		{
+		  return SHELL_CONT;
+		}
+	    }
+  
+	  free(buf);
+	  buf = NULL;
+	  offset += len;
+	  
+	  if (1 == hash)
+	    {
+	      fprintf(stderr, "#");
+	      fflush(stderr);
+	    }
+	}
+     
+    }
+
 
   var_set("status", "0", VAR_CMD_SET, NULL);
       
@@ -241,12 +298,27 @@ cmd_get(int argc,
 
   if (0 == do_stdout)
     {
-      if (-1 != get_data.fd)
-        close(get_data.fd);
+      if (-1 != fd)
+        close(fd);
     }
 
-  if (NULL != get_data.pipe)
-    pclose(get_data.pipe);
+  if (NULL != pipe)
+    pclose(pipe);
+
+  if (Oflag)
+    {
+    }
+  else
+    {
+      ret = dpl_close(vfile);
+      if (DPL_SUCCESS != ret)
+	{
+	  //fprintf(stderr, "close failed %s (%d)\n", dpl_status_str(ret), ret);
+	  goto retry;
+	}
+    }
+
+  free(buf);
 
   return SHELL_CONT;
 }
