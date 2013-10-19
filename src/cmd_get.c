@@ -202,6 +202,11 @@ cmd_get(int argc,
 		     NULL);
       if (DPL_SUCCESS != ret)
 	{
+	  if (DPL_ERANGEUNAVAIL == ret)
+	    {
+	      /* ran off the end */
+	      goto end;
+	    }
 	  if (DPL_ENOENT == ret)
 	    {
 	      fprintf(stderr, "no such object\n");
@@ -245,7 +250,7 @@ cmd_get(int argc,
 	  ret = dpl_pread(vfile, block_size, offset, &buf, &len);
 	  if (DPL_SUCCESS != ret)
 	    {
-	      if (DPL_ENOENT == ret)
+	      if (DPL_ENOENT == ret || DPL_ERANGEUNAVAIL == ret)
 		break ;
 
 	      fprintf(stderr, "pread failed %s (%d)\n", dpl_status_str(ret), ret);
