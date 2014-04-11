@@ -36,14 +36,15 @@ cmd_pwd(int argc,
 
   optind = 0;
 
-  while ((opt = linux_getopt(argc, argv, "")) != -1)
-    switch (opt)
-      {
-      case '?':
-      default:
-        usage_help(&pwd_cmd);
-        return SHELL_CONT;
-      }
+  while ((opt = linux_getopt(argc, argv, "")) != -1) {
+    switch (opt) {
+    case '?':
+    default:
+      usage_help(&pwd_cmd);
+      return SHELL_CONT;
+    }
+  }
+
   argc -= optind;
   argv += optind;
 
@@ -55,7 +56,10 @@ cmd_pwd(int argc,
 
   cur_fqn = dpl_cwd(ctx, ctx->cur_bucket);
 
-  printf("%s:/%s\n", ctx->cur_bucket, cur_fqn.path);
+  if (!strcmp(cur_fqn.path, "/"))
+    printf("%s:/\n", ctx->cur_bucket);
+  else
+    printf("%s:/%s\n", ctx->cur_bucket, cur_fqn.path);
 
   var_set("status", "0", VAR_CMD_SET, NULL);
 

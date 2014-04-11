@@ -272,15 +272,18 @@ path_contains_valid_bucketname(dpl_ctx_t *ctx,
       if (DPL_SUCCESS != ret)
         goto no_bucket;
 
-      for (i = 0; i < buckets->n_items && 0 == found; i++)
-        {
-          dpl_value_t *item = dpl_vec_get(buckets, i);
-          if (item)
-            {
-              if (! strcmp(path, (char *) item->string))
-                found = 1;
-            }
+      if (buckets != NULL) {
+        for (i = 0; i < buckets->n_items; i++) {
+          dpl_bucket_t *bucket = dpl_vec_get(buckets, i);
+
+          if (bucket != NULL && !strcmp(path, bucket->name)) {
+            found = 1;
+            break;
+          }
         }
+
+        dpl_vec_buckets_free(buckets);
+      }
 
       *p = ':';
 
