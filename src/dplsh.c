@@ -25,6 +25,10 @@ int hash = 0;
 
 volatile sig_atomic_t flag = 0;
 
+char *cmd          = NULL;
+char *droplet_dir  = NULL;
+char *profile_name = NULL;
+
 static void
 sig_handler(int signo)
 {
@@ -51,7 +55,17 @@ do_quit()
 {
   vars_save();
   vars_free();
-  dpl_ctx_free(ctx);
+
+  if (ctx != NULL)
+    dpl_ctx_free(ctx);
+
+  if (cmd != NULL)
+    free(cmd);
+  if (droplet_dir != NULL)
+    free(droplet_dir);
+  if (profile_name != NULL)
+    free(profile_name);
+
   dpl_free();
 
   exit(status);
@@ -109,17 +123,13 @@ main(int argc,
   int ret;
   char opt;
   enum shell_error shell_err;
-  char *cmd = NULL;
   optind = 0;
-  char *droplet_dir = NULL;
-  char *profile_name = NULL;
-
+  
   ret = dpl_init();
-  if (DPL_SUCCESS != ret)
-    {
-      fprintf(stderr, "error initing droplet\n");
-      exit(1);
-    }
+  if (DPL_SUCCESS != ret) {
+    fprintf(stderr, "error initing droplet\n");
+    exit(1);
+  }
 
   while ((opt = linux_getopt(argc, argv, usage_getoptstr(main_usage))) != -1)
     switch (opt)
@@ -141,28 +151,20 @@ main(int argc,
   argc -= optind;
   argv += optind;
 
-#if 0
-  {
-    extern void test_strrstr();
-    test_strrstr();
-    exit(0);
+  if (0 != argc) {
+    usage_help(&main_cmd);
+    status = 1;
+    do_quit();
   }
-#endif
-
-  if (0 != argc)
-    {
-      usage_help(&main_cmd);
-      exit(1);
-    }
 
   signal(SIGINT, sig_handler);
 
   ctx = dpl_ctx_new(droplet_dir, profile_name);
-  if (NULL == ctx)
-    {
-      fprintf(stderr, "error creating droplet ctx\n");
-      exit(1);
-    }
+  if (NULL == ctx) {
+    fprintf(stderr, "error creating droplet ctx\n");
+    status = 1;
+    do_quit();
+  }
 
   var_set("status", NULL, VAR_CMD_SET_SPECIAL, var_set_status);
   var_set("status", "0", VAR_CMD_SET, NULL);
@@ -177,14 +179,12 @@ main(int argc,
 
   vars_load();
 
-  if (NULL != cmd)
-    {
-      ret = shell_parse(cmd_defs, cmd, &shell_err);
-      if (ret == SHELL_EPARSE)
-        fprintf(stderr, "parsing: %s\n", shell_error_str(shell_err));
-      free(cmd);
-      do_quit();
-    }
+  if (NULL != cmd) {
+    ret = shell_parse(cmd_defs, cmd, &shell_err);
+    if (ret == SHELL_EPARSE)
+      fprintf(stderr, "parsing: %s\n", shell_error_str(shell_err));
+    do_quit();
+  }
 
   shell_install_cmd_defs(cmd_defs);
   rl_attempted_completion_function = shell_completion;
