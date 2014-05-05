@@ -29,7 +29,7 @@ int read_fd(int fd, char **data_bufp, u_int *data_lenp);
 size_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
 
-int linux_getopt(int argc, char * const argv[],
-		 const char *optstring);
+int linux_getopt(int argc, char * const argv[], const char *optstring);
+int path_contains_valid_bucketname(dpl_ctx_t *ctx, const char * const path);
 
 #endif

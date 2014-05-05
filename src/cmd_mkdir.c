@@ -57,6 +57,16 @@ cmd_mkdir(int argc,
 
   path = argv[0];
 
+  if (! strcmp("s3", (char *) dpl_get_backend_name(ctx)))
+    {
+      if (-1 == path_contains_valid_bucketname(ctx, path))
+        {
+          fprintf(stderr, "You need to set a bucket to use 'mkdir' "
+                  "(use 'la' to list the buckets)\n");
+          goto end;
+        }
+    }
+
   ret = dpl_mkdir(ctx, path, NULL, NULL);
   if (DPL_SUCCESS != ret)
     {

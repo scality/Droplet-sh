@@ -110,6 +110,16 @@ cmd_get(int argc,
       return SHELL_CONT;
     }
 
+  if (! strcmp("s3", (char *) dpl_get_backend_name(ctx)))
+    {
+      if (-1 == path_contains_valid_bucketname(ctx, path))
+        {
+          fprintf(stderr, "You need to set a bucket to use 'get' "
+                  "(use 'la' to list the buckets)\n");
+          goto end;
+        }
+    }
+
   if (!strcmp(local_file, "-"))
     {
       fd = 1;
