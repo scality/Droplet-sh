@@ -60,6 +60,17 @@ cmd_cp(int argc,
   src_path = argv[0];
   dst_path = argv[1];
 
+  if (! strcmp("s3", (char *) dpl_get_backend_name(ctx)))
+    {
+      if (-1 == path_contains_valid_bucketname(ctx, src_path) ||
+          -1 == path_contains_valid_bucketname(ctx, dst_path))
+        {
+          fprintf(stderr, "You need to set a bucket to use 'cp' "
+                  "(use 'la' to list the buckets)\n");
+          goto end;
+        }
+    }
+
   if (!strcmp(dst_path, "."))
     {
       char *p;

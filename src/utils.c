@@ -248,3 +248,56 @@ linux_getopt(int argc, char * const argv[],
 #endif
   return rc;
 }
+
+int
+path_contains_valid_bucketname(dpl_ctx_t *ctx,
+                               const char * const path)
+{
+  int ret;
+
+  /* we can do 'cmd bucket:/path' or 'cmd bucket:', even if no bucket is set */
+  if (path)
+    {
+      char *p = strchr(path, ':');
+      dpl_vec_t *buckets = NULL;
+      int i;
+      int found = 0;
+
+      if (! p)
+        goto no_bucket;
+
+      *p = 0;
+
+      ret = dpl_list_all_my_buckets(ctx, &buckets);
+      if (DPL_SUCCESS != ret)
+        goto no_bucket;
+
+      for (i = 0; i < buckets->n_items && 0 == found; i++)
+        {
+          dpl_value_t *item = dpl_vec_get(buckets, i);
+          if (item)
+            {
+              if (! strcmp(path, (char *) item->string))
+                found = 1;
+            }
+        }
+
+      *p = ':';
+
+      if (0 == found)
+        goto no_bucket;
+    }
+  else
+    {
+    no_bucket:
+      if (! ctx->cur_bucket || ! strcmp(ctx->cur_bucket, ""))
+        {
+          ret = -1;
+          goto end;
+        }
+    }
+
+  ret = 0;
+ end:
+  return ret;
+}

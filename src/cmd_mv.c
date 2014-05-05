@@ -77,6 +77,17 @@ cmd_mv(int argc,
         }
     }
 
+  if (! strcmp("s3", (char *) dpl_get_backend_name(ctx)))
+    {
+      if (-1 == path_contains_valid_bucketname(ctx, src_path) ||
+          -1 == path_contains_valid_bucketname(ctx, dst_path))
+        {
+          fprintf(stderr, "You need to set a bucket to use 'mv' "
+                  "(use 'la' to list the buckets)\n");
+          goto end;
+        }
+    }
+
   ret = dpl_getattr(ctx, src_path, NULL, &sysmd);
   if (DPL_SUCCESS != ret)
     {
