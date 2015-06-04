@@ -171,6 +171,7 @@ cmd_get(int argc,
 		     NULL,
 		     NULL,
 		     NULL,
+                     NULL,
 		     &vfile);
       if (DPL_SUCCESS != ret)
 	{

@@ -241,6 +241,7 @@ cmd_put(int argc,
 		     metadata,
 		     &sysmd,
 		     query_params,
+                     NULL,
 		     &vfile);
       if (DPL_SUCCESS != ret)
 	{
