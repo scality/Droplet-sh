@@ -99,8 +99,10 @@ cmd_getattr(int argc,
         }
       if (sflag)
         dpl_sysmd_print(&sysmd, stdout);
-      else 
+      else if (metadata)
         dpl_dict_print(metadata, stdout, 0);
+      else
+        fprintf(stderr, "No metadata to display.\n");
     }
   
   var_set("status", "0", VAR_CMD_SET, NULL);
